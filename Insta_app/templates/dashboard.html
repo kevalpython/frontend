@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <style>
+    .messages {
+      border-right: 1px solid #ddd;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .posts {
+      overflow-y: auto;
+    }
+    .message, .post {
+      padding: 16px;
+      border-bottom: 1px solid #ddd;
+    }
+    .message:last-child, .post:last-child {
+      border-bottom: none;
+    }
+    .post img {
+      max-width: 100%;
+      height: auto;
+    }
+    .like-button {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="dashboard"></div>
+  <script>
+   document.addEventListener('DOMContentLoaded', () => {
+  const dashboard = document.querySelector('#dashboard');
+
+  dashboard.innerHTML = `
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-3 messages">
+          <!-- Messages Section -->
+          <div class="message">Message 1</div>
+          <div class="message">Message 2</div>
+          <div class="message">Message 3</div>
+          <!-- Add more messages as needed -->
+        </div>
+        <div class="col-md-9 posts" id="posts">
+          <!-- Posts Section -->
+        </div>
+      </div>
+    </div>
+  `;
+
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzIwNTMzNTI2LCJpYXQiOjE3MjA1Mjk5MjYsImp0aSI6ImM2MzBjMjdjYzNkMzRlZjdiNTJiM2Y4MWIzMjFmOWMxIiwiaWQiOjF9.D3_hMYSTwg35UMut87D4zbFWxUbue7R6aYq5GpUOOhU';
+
+  fetch('http://127.0.0.1:8000/postlist/', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      console.log(response);
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    return response.json();
+  })
+  .then(data => {
+    const postsDiv = document.getElementById('posts');
+    postsDiv.innerHTML = '';
+
+    data.forEach(post => {
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post';
+      postDiv.innerHTML = `
+        <img src="${post.post_images_videos && post.post_images_videos.length > 0 ? post.post_images_videos[0].file : ''}" alt="image" width="200" height="200"/>
+        <br>
+        <p>${post.content}</p>
+        <p>Like (${post.total_likes})</p>
+      `;
+      postsDiv.appendChild(postDiv);
+    });
+  })
+  .catch(error => {
+    console.error('Error fetching posts:', error);
+  });
+});
+</script>
+</body>
+</html>
