@@ -1,0 +1,116 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style>
+    .messages {
+      border-right: 2px solid #ddd;
+      height: auto;
+      overflow-y: auto;
+    }
+    .posts {
+      overflow-y: auto;
+    }
+    .message, .post {
+      padding: 16px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .post img {
+      max-width: 100%;
+      height: auto;
+    }
+    .like-button {
+      margin-top: 10px;
+    }
+    .message-right {
+      text-align: right;
+      background-color: #e0ffe0; /* Example color */
+      padding: 10px;
+      border-radius: 10px;
+      margin: 5px 0;
+      float: right;
+      clear: both;
+    }
+
+    .message-left {
+    text-align: left;
+    background-color: #f0f0f0; /* Example color */
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px 0;
+    float: left;
+    clear: both;
+    }
+    .comment-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 400px;
+        border-radius: 10px;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="dashboard"></div>
+  <div id="commentModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="postcommentdiv">
+
+        </div>
+        <div>
+        <input type="text" id="commentInput" placeholder="comment">
+        <button id="submitComment">Submit</button>
+      </div>  
+      </div>
+  </div>
+  <script type="module" src="/js/dashboard.js"></script>
+</body>
+</html>
