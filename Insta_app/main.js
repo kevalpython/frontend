@@ -18,17 +18,17 @@ const loadForm = (type) => {
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="text" id="login-username" class="form-control" placeholder="Username"/>
+                          <input type="text" id="login-username" class="form-control" placeholder="Username" required/>
                         </div>
                       </div>      
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="password" id="login-password" class="form-control" placeholder="Password"/>
+                          <input type="password" id="login-password" class="form-control" placeholder="Password" required/>
                         </div>
                       </div>
                       <div class="form-check d-flex justify-content-center mb-5">
-                        <input class="form-check-input me-2" type="checkbox" value="" id="form2Example3c" />
+                        <input class="form-check-input me-2" type="checkbox" value="" id="form2Example3c" required/>
                         <label class="form-check-label" for="form2Example3">
                           I agree all statements in <a href="#!">Terms of service</a>
                         </label>
@@ -63,43 +63,43 @@ const loadForm = (type) => {
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="text" id="reg-first-name" class="form-control" placeholder="First Name"/>
+                          <input type="text" id="reg-first-name" class="form-control" placeholder="First Name" required/>
                         </div>
                       </div>
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="text" id="reg-last-name" class="form-control" placeholder="Last Name"/>
+                          <input type="text" id="reg-last-name" class="form-control" placeholder="Last Name" required/>
                         </div>
                       </div>
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-envelope fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="email" id="reg-email" class="form-control" placeholder="Email"/>
+                          <input type="email" id="reg-email" class="form-control" placeholder="Email" required/>
                         </div>
                       </div>
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-user fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="text" id="reg-username" class="form-control" placeholder="Username"/>
+                          <input type="text" id="reg-username" class="form-control" placeholder="Username" required/>
+                        </div>
+                      </div>
+                      <div class="d-flex flex-row align-items-center mb-4">
+                        <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
+                        <div class="form-outline flex-fill mb-0"> 
+                          <input type="password" id="reg-password" class="form-control" placeholder="Password" required/>
                         </div>
                       </div>
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="password" id="reg-password" class="form-control" placeholder="Password"/>
-                        </div>
-                      </div>
-                      <div class="d-flex flex-row align-items-center mb-4">
-                        <i class="fas fa-lock fa-lg me-3 fa-fw"></i>
-                        <div class="form-outline flex-fill mb-0">
-                          <input type="password" id="reg-password2" class="form-control" placeholder="Repeat Password"/>
+                          <input type="password" id="reg-password2" class="form-control" placeholder="Repeat Password" required/>
                         </div>
                       </div>
                       <div class="d-flex flex-row align-items-center mb-4">
                         <i class="fas fa-image fa-lg me-3 fa-fw"></i>
                         <div class="form-outline flex-fill mb-0">
-                          <input type="file" id="reg-profile-img" class="form-control" accept="image/*"/>
+                          <input type="file" id="reg-profile-img" class="form-control" accept="image/*" required/>
                         </div>
                       </div>
                       <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">

@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', (event) => {
     const dashboard = document.querySelector('#dashboard');
     event.preventDefault();
@@ -14,17 +15,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
               <li><a href="#" id="logout-link">Logout</a></li>
             </ul>
           </div>
-          <div class="col-md-6 posts" id="posts">
+          <div class="col-md-6 posts-div" id="posts-div">
             <!-- Posts Section -->
           </div>
-          <div class="col-md-6 addpost" id="addpost" style="display: none;">
+          <div class="col-md-6 addpost-div" id="addpost-div" style="display: none;">
             <!-- User addpost Section -->
           </div>
-          <div class="col-md-6 messages" id="messages" style="display: none;">
+          <div class="col-md-6 messages-div" id="messages-div" style="display: none;">
           <div class="row">
-          <div class="col-md-4 chat-convesation" id="chat-convesation">
+          <div class="col-md-4 chat-convesation-div" id="chat-convesation-div">
           </div>
-            <div class="col-md-8 chatDiv" id="chatDiv" style="display: none;">
+            <div class="col-md-8 chat-div" id="chat-div" style="display: none;">
                 <div class="col-md-12 chat-message-Div" id="ChatMessageDiv">
                 </div>
                 <div class="col-md-12 chat-input-div" id="ChatInputDiv">
@@ -36,22 +37,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
         </div>
             <!-- User Profile data Section -->
           </div>
-          <div class="col-md-6 friendrequests" id="friendrequests" style="display: none;">
+          <div class="col-md-6 friend-requests-div" id="friend-requests-div" style="display: none;">
             <!-- Friend Requests Section -->
           </div>
-          <div class="col-md-6 userprofile-data" id="userprofile-data" style="display: none;">
+          <div class="col-md-6 userprofile-detail-div" id="userprofile-detail-div" style="display: none;">
             <!-- User Profile data Section -->
           </div>
-          <div class="col-md-6 edit-userprofile-data" id="edit-userprofile-data" style="display: none;">
+          <div class="col-md-6 edit-userprofile-div" id="edit-userprofile-div" style="display: none;">
             <!-- User Profile data Section -->
           </div>
-          <div class="col-md-6 user-search-data" id="user-search-data" style="display: none;">
-            
-                <input type="text" class="col-sm-6 form-control" id="searchUser" name="searchUser" placeholder="Search">
+          <div class="col-md-6 user-search-div" id="user-search-div" style="display: none;">
+            <input type="text" class="col-sm-6 form-control" id="searchUser" name="searchUser" placeholder="Search">
             <br/><br/>
-            <div id="search-result"></div>
+            <div id="search-result-div"></div>
           </div>
-          <div class="col-md-3 userprofile" id="userprofile">
+          <div class="col-md-3 userprofile-div" id="userprofile-div">
             <!-- User Profile Section -->
           </div>
         </div>
@@ -60,14 +60,43 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const token = localStorage.getItem('access');
     const user_id = localStorage.getItem('user_id');
-    const postsDiv = document.getElementById('posts');
-    const friendRequestsDiv = document.getElementById('friendrequests');
-    const edit_userprofile_data = document.getElementById('edit-userprofile-data');
-    const userProfileDiv = document.getElementById('userprofile-data');
-    const addpostDiv = document.getElementById('addpost');
-    const usersearchData = document.getElementById('user-search-data');
+    const login_username = localStorage.getItem('username')
+    const posts_div = document.getElementById('posts-div');
+    const friend_requests_div = document.getElementById('friend-requests-div');
+    const edit_userprofile_div = document.getElementById('edit-userprofile-div');
+    const userprofile_detail_div = document.getElementById('userprofile-detail-div');
+    const addpost_div = document.getElementById('addpost-div');
+    const user_search_div = document.getElementById('user-search-div');
+    const search_result_div = document.getElementById('search-result-div');
+    const messages_div = document.getElementById('messages-div');
+    const search_input = document.getElementById('searchUser');
+    const post_comment_div = document.getElementById('post-comment-div');
+    const chat_conversation_div = document.getElementById('chat-convesation-div');
+    const chat_div = document.getElementById('chat-div');
+    const modal = document.getElementById('commentModal');
+    const span = document.getElementsByClassName('close')[0];
+    const submit_comment_button = document.getElementById('submitComment');
     
-    const messagesDiv = document.getElementById('messages');
+    function toggleDisplay(elementToShow) {
+        const elements = [
+            edit_userprofile_div,
+            messages_div,
+            modal,
+            addpost_div,
+            user_search_div,
+            posts_div,
+            friend_requests_div,
+            userprofile_detail_div
+        ];
+
+        elements.forEach(elementId => {
+            if (elementToShow == elementId){
+                elementToShow.style.display = 'block';    
+            }else{
+                elementId.style.display = 'none';
+            }
+        });       
+    }
 
     const fetchPosts = async () => {
         try {
@@ -112,7 +141,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             return response.json();
         });
     };
-    const fetchsearchuserdataUser = (userId) => {
+
+    const fetchSearchUser = (userId) => {
         return fetch(`http://127.0.0.1:8000/post/${userId}`, {
             method: 'GET',
             headers: {
@@ -140,14 +170,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     'Content-Type': 'application/json'
                 }
             });
-
             if (!response.ok) {
                 if (response.status === 403 || response.status === 400) {
                     window.location.href = 'index.html';
                 }
                 throw new Error('Network response was not ok ' + response.statusText);
             }
-
             const data = await response.json();
             return data;
         } catch (error) {
@@ -155,7 +183,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             throw error;
         }
     };
-
 
     const fetchConversations = () => {
         return fetch(`http://127.0.0.1:8000/conversation/`, {
@@ -184,50 +211,41 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json'
             }
         })
-            .then(response => {
-                if (!response.ok) {
-                    if (response.status === 403 || response.status === 400) {
-                        window.location.href = 'index.html';
-                    }
-                    throw new Error('Network response was not ok ' + response.statusText);
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 403 || response.status === 400) {
+                    window.location.href = 'index.html';
                 }
-                return response.json();
-            });
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        });
     };
-
-    const renderPosts = (data) => {
-        
-        postsDiv.innerHTML = '';
-        
+    const renderPosts = (data) => {  
+        posts_div.innerHTML = '';
         data.forEach(post => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
             const username = document.createElement('div');
             username.textContent = post.user_name;
             postDiv.appendChild(username);
-
             if (post.post_images_videos && post.post_images_videos.length > 0) {
                 let currentIndex = 0;
                 const mediaArray = post.post_images_videos;
-
                 const mediaElement = document.createElement('img');
                 mediaElement.src = mediaArray[currentIndex].file;
                 mediaElement.alt = 'image';
                 mediaElement.width = 200;
                 mediaElement.height = 200;
-
                 postDiv.appendChild(mediaElement);
-
                 const updateMedia = () => {
                     mediaElement.src = mediaArray[currentIndex].file;
                     updateButtonsVisibility();
                 };
-
                 const updateButtonsVisibility = () => {
                     prevButton.style.display = currentIndex > 0 ? 'inline-block' : 'none';
                     nextButton.style.display = currentIndex < mediaArray.length - 1 ? 'inline-block' : 'none';
                 };
-
                 const prevButton = document.createElement('button');
                 prevButton.textContent = 'Previous';
                 prevButton.style.display = 'none';
@@ -236,7 +254,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateMedia();
                 });
                 postDiv.appendChild(prevButton);
-
                 const nextButton = document.createElement('button');
                 nextButton.textContent = 'Next';
                 nextButton.style.display = mediaArray.length > 1 ? 'inline-block' : 'none';
@@ -245,14 +262,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateMedia();
                 });
                 postDiv.appendChild(nextButton);
-
                 updateButtonsVisibility();
             }
-
             const contentParagraph = document.createElement('p');
             contentParagraph.textContent = post.content;
             postDiv.appendChild(contentParagraph);
-
             const likeButton = document.createElement('button');
             likeButton.innerHTML = '<i class="fa fa-heart" style="font-size:20px;color:green"></i>';
             likeButton.className = 'like-button';
@@ -282,125 +296,101 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     });
             });
             postDiv.appendChild(likeButton);
-
             const commentButton = document.createElement('button');
             commentButton.innerHTML = '<i class="fa fa-comments-o" style="font-size:20px"></i>';
             commentButton.className = 'comment-button';
             commentButton.setAttribute('data-toggle', 'modal');
-
             commentButton.addEventListener('click', () => {
                 openModal(post.id, post.comments);
             });
-
             postDiv.appendChild(commentButton);
             const likesParagraph = document.createElement('p');
             likesParagraph.textContent = `Likes (${post.total_likes})`;
             postDiv.appendChild(likesParagraph);
 
-            postsDiv.appendChild(postDiv);
+            posts_div.appendChild(postDiv);
         });
     };
 
-    const modal = document.getElementById('commentModal');
-    const span = document.getElementsByClassName('close')[0];
-    const submitCommentButton = document.getElementById('submitComment');
-
     function openModal(postID, postcomments) {
-       
-        const comments = Array.isArray(postcomments) ? postcomments : [postcomments];
-
-        const postcommentdiv = document.getElementById('postcommentdiv')
-        postcommentdiv.innerHTML = ''
+        const comments = Array.isArray(postcomments) ? postcomments : [postcomments]; 
+        post_comment_div.innerHTML = ''
         comments.forEach(comment => {
-
             const commentHtml = `
                     <div class="DivComment">
                         ${comment.content}
                     </div>
                 `;
-            postcommentdiv.innerHTML += commentHtml;
+            post_comment_div.innerHTML += commentHtml;
         });
-        submitCommentButton.setAttribute('data-postid', postID);
+        submit_comment_button.setAttribute('data-postid', postID);
         modal.style.display = 'block';
     }
-
     function closeModal() {
         loadDashboard()
         modal.style.display = 'none';
     }
-
     span.onclick = () => {
         closeModal();
     };
-
     window.onclick = (event) => {
         if (event.target == modal) {
             closeModal();
         }
     };
 
-    submitCommentButton.addEventListener('click', () => {
+    submit_comment_button.addEventListener('click', () => {
         const commentInput = document.getElementById('commentInput');
         const commentText = commentInput.value;
-        const postID = submitCommentButton.getAttribute('data-postid');
+        const postID = submit_comment_button.getAttribute('data-postid');
         if (commentText) {
-            
             commentInput.value = '';
-
-            
             const postData = {
                 post_id: postID,
                 comment: commentText
             };
-
-            
             fetch('http://127.0.0.1:8000/addcommentpost/', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                    
+                    'Content-Type': 'application/json'   
                 },
                 body: JSON.stringify(postData)
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json(); 
-                })
-                .then(data => {
-                   
-                    closeModal(); 
-                })
-                .catch(error => {
-                    console.error('Error posting comment:', error);
-                });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); 
+            })
+            .then(data => {
+                
+                closeModal(); 
+            })
+            .catch(error => {
+                console.error('Error posting comment:', error);
+            });
         }
     });
 
     const renderUserProfile = (data) => {
-        const userProfileDiv = document.getElementById('userprofile');
-        userProfileDiv.innerHTML = '';
-
+        const userProfile_Div = document.getElementById('userprofile-div');
+        userProfile_Div.innerHTML = '';
         const profileImage = document.createElement('img');
         profileImage.id = 'profile-image';
         profileImage.src = data.profile_img;
         profileImage.alt = 'Profile Image';
         profileImage.width = 100;
         profileImage.height = 100;
-
         const username = document.createElement('p');
         username.textContent = data.username;
-
-        userProfileDiv.appendChild(profileImage);
-        userProfileDiv.appendChild(username);
+        userProfile_Div.appendChild(profileImage);
+        userProfile_Div.appendChild(username)    ;
     };
 
     const renderFriendRequests = (data) => {
         console.log("console.loga",data)
-        friendRequestsDiv.innerHTML = '';
-        
+        friend_requests_div.innerHTML = '';
         data.forEach(request => {
             const requestDiv = document.createElement('div');
             requestDiv.className = 'request';
@@ -411,7 +401,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             profileImg.style.height = '50px'; 
             profileImg.style.borderRadius = '50%';  
             requestDiv.appendChild(profileImg);
-
             const username = document.createElement('div');
             username.textContent = request.from_user;
             requestDiv.appendChild(username);
@@ -433,15 +422,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                             renderFriendRequests(data);
                         })
                         .catch(error => {
-            
                         });
                     }
                     return response.json();
                 });
-
             });
             requestDiv.appendChild(acceptButton);
-
             const declineButton = document.createElement('button');
             declineButton.textContent = 'Decline';
             declineButton.addEventListener('click', () => {
@@ -460,7 +446,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                             renderFriendRequests(data);
                         })
                         .catch(error => {
-            
                         });
                     }
                     return response.json();
@@ -469,7 +454,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             });
             requestDiv.appendChild(declineButton);
 
-            friendRequestsDiv.appendChild(requestDiv);
+            friend_requests_div.appendChild(requestDiv);
         });
 
     };
@@ -484,16 +469,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
             });
     };
     loadDashboard();
+    
     document.getElementById('friendrequest-link').addEventListener('click', (event) => {
-        event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        messagesDiv.style.display = 'none';
-        modal.style.display = 'none';
-        addpostDiv.style.display = 'none';
-        usersearchData.style.display = "none";
-        postsDiv.style.display = 'none';
-        friendRequestsDiv.style.display = 'block';
-        userProfileDiv.style.display = 'none';
+        event.preventDefault(); 
+        toggleDisplay(friend_requests_div);
         console.log("11111111")
         fetchFriendRequests()
             .then(data => {
@@ -503,7 +482,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => {
             });
     });
-
     document.getElementById('logout-link').addEventListener('click', (event) => {
         event.preventDefault();
         const refresh_token = localStorage.getItem('refresh');
@@ -516,7 +494,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             body: JSON.stringify({ refresh_token }),
         })
             .then(response => {
-
                 localStorage.removeItem('access');
                 localStorage.removeItem('refresh');
                 localStorage.removeItem('username');
@@ -524,37 +501,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 window.location.replace('index.html');
             })
             .catch(error => {
-
             });
     });
-
-    document.getElementById('userprofile').addEventListener('click', (event) => {
+    document.getElementById('userprofile-div').addEventListener('click', (event) => {
         event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        modal.style.display = 'none';
-        messagesDiv.style.display = 'none';
-        usersearchData.style.display = "none";
-        addpostDiv.style.display = 'none';
-        
-        postsDiv.style.display = 'none';
-        friendRequestsDiv.style.display = 'none';
-        userProfileDiv.style.display = 'block';
-
+        toggleDisplay(userprofile_detail_div);
         fetchPostsUser()
         .then(data => {
-            renderUserPostsGrid(data);
+            renderUserPosts(data);
         })
         .catch(error => {
-
         });
     });
 
-    const renderUserPostsGrid = (data) => {
-        console.log("=====>",data)
-        console.log("=====>",data.username.username)
-        userProfileDiv.innerHTML = `<div class="row"><div class="col-md-5">${data.username.username}</div>
-            <div class="col-md-7"><a href="#" id="edit-profile-link"><button type="button" class="btn btn-secondary btn-sm">Edit Profile</button></a>
-            </div>
+    const renderUserPosts = (data) => {
+        console.log("=====>", data);
+        console.log("=====>", data.username.username);
+    
+        let editProfileButton = '';
+        if (login_username === data.username.username) {
+            editProfileButton = `<a href="#" id="edit-profile-link"><button type="button" class="btn btn-secondary btn-sm">Edit Profile</button></a>`;
+        }
+    
+        userprofile_detail_div.innerHTML = `<div class="row"><div class="col-md-5">${data.username.username}</div>
+            <div class="col-md-7">${editProfileButton}</div>
             </div>
             <div class="row">
             <div class="col-md-5 "><h2>User Posts</h2></div>
@@ -563,16 +533,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             <div class="col-md-6"><h2>${data.total_friends}</h2><p>Friends</p></div>
             </div>
             </div><br><br><br>`;
-
+    
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'grid';
         gridContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        gridContainer.style.gridGap = '10px';
-
         data.posts.forEach(post => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post-grid';
-
             if (post.post_images_videos && post.post_images_videos.length > 0) {
                 const mediaElement = document.createElement('img');
                 mediaElement.src = post.post_images_videos[0].file;
@@ -581,107 +548,135 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 mediaElement.height = 100;
                 postDiv.appendChild(mediaElement);
                 mediaElement.addEventListener('click', () => {
-
-                    userProfileDiv.style.display = 'none';
-                    const posts = document.getElementById('posts');
-                    posts.style.display = 'block';
-                    renderPosts(data.posts); 
+                    userprofile_detail_div.style.display = 'none';
+                    posts_div.style.display = 'block';
+                    renderPosts(data.posts);
                 });
             }
             const contentParagraph = document.createElement('p');
             contentParagraph.textContent = post.content;
             postDiv.appendChild(contentParagraph);
-
+    
             gridContainer.appendChild(postDiv);
         });
-
-        userProfileDiv.appendChild(gridContainer);
-        document.getElementById('edit-profile-link').addEventListener('click', async (event) => {
-            event.preventDefault();
-            const modal = document.querySelector('.modal'); 
-            edit_userprofile_data.style.display = 'block';
-            modal.style.display = 'none';
-            messagesDiv.style.display = 'none';
-            postsDiv.style.display = 'none';
-            userProfileDiv.style.display = "none";
-            friendRequestsDiv.style.display = 'none';
-            addpostDiv.style.display = "none";
-            usersearchData.style.display = "none";
-            edit_userprofile_data.innerHTML = `
-                <section class="vh-100">
-                    <div class="row d-flex justify-content-center align-items-center h-100">
-                        <div class="col-lg-12 col-xl-11">
-                            <div class="card text-black" style="border-radius: 22px;">
-                                <div class="card-body p-md-5">
-                                    <div class="row justify-content-center">
-                                        <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
-                                            <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Edit Profile</p>
-                                            <form id="edit-userprofile-form" class="mx-1 mx-md-4" enctype="multipart/form-data">
-                                                <div class="d-flex flex-row align-items-center mb-4">
-                                                    <div class="form-outline flex-fill mb-0">
-                                                    <input type="text" id="edit-first-name" class="form-control" placeholder="First Name"/>
+        userprofile_detail_div.appendChild(gridContainer);
+    
+        if (login_username === data.username.username) {
+            document.getElementById('edit-profile-link').addEventListener('click', async (event) => {
+                event.preventDefault();
+                toggleDisplay(edit_userprofile_div)
+                edit_userprofile_div.innerHTML = `
+                    <section class="vh-100">
+                        <div class="row d-flex justify-content-center align-items-center h-100">
+                            <div class="col-lg-12 col-xl-11">
+                                <div class="card text-black" style="border-radius: 22px;">
+                                    <div class="card-body p-md-5">
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-10 col-lg-6 col-xl-5 order-2 order-lg-1">
+                                                <p class="text-center h1 fw-bold mb-5 mx-1 mx-md-4 mt-4">Edit Profile</p>
+                                                <form id="edit-userprofile-form" class="mx-1 mx-md-4" enctype="multipart/form-data">
+                                                    <div class="d-flex flex-row align-items-center mb-4">
+                                                        <div class="form-outline flex-fill mb-0">
+                                                            <input type="text" id="edit-first-name" class="form-control" placeholder="First Name" required/>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="d-flex flex-row align-items-center mb-4">
-                                                    <div class="form-outline flex-fill mb-0">
-                                                    <input type="text" id="edit-last-name" class="form-control" placeholder="Last Name"/>
+                                                    <div class="d-flex flex-row align-items-center mb-4">
+                                                        <div class="form-outline flex-fill mb-0">
+                                                            <input type="text" id="edit-last-name" class="form-control" placeholder="Last Name" required/>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="d-flex flex-row align-items-center mb-4">
-                                                    <div class="form-outline flex-fill mb-0">
-                                                    <input type="email" id="edit-email" class="form-control" placeholder="Email"/>
+                                                    <div class="d-flex flex-row align-items-center mb-4">
+                                                        <div class="form-outline flex-fill mb-0">
+                                                            <input type="email" id="edit-email" class="form-control" placeholder="Email" required/>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="d-flex flex-row align-items-center mb-4">
-                                                    <div class="form-outline flex-fill mb-0">
-                                                    <input type="text" id="edit-username" class="form-control" placeholder="Username"/>
+                                                    <div class="d-flex flex-row align-items-center mb-4">
+                                                        <div class="form-outline flex-fill mb-0">
+                                                            <input type="text" id="edit-username" class="form-control" placeholder="Username" required/>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="d-flex flex-row align-items-center mb-4">
-                                                    <div class="form-outline flex-fill mb-0">
-                                                    <input type="file" id="edit-profile-img" class="form-control" accept="image/*"/>
+                                                    <div class="d-flex flex-row align-items-center mb-4">
+                                                        <div class="form-outline flex-fill mb-0">
+                                                            <input type="file" id="edit-profile-img" class="form-control" accept="image/*" required/>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
-                                                    <button type="submit" class="btn btn-primary btn-lg">Update</button>
-                                                </div>
-                                            </form>
+                                                    <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
+                                                        <button type="submit" class="btn btn-primary btn-lg">Update</button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-            `;
-
-            try {
-                const response = await fetch(`http://127.0.0.1:8000/userprofile/${user_id}/`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+                    </section>
+                `;
+    
+                try {
+                    const response = await fetch(`http://127.0.0.1:8000/userprofile/${user_id}/`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        document.getElementById('edit-first-name').value = data.first_name;
+                        document.getElementById('edit-last-name').value = data.last_name;
+                        document.getElementById('edit-email').value = data.email;
+                        document.getElementById('edit-username').value = data.username;
+                    } else {
+                        console.error('Failed to fetch user profile data:', response.statusText);
                     }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('edit-first-name').value = data.first_name;
-                    document.getElementById('edit-last-name').value = data.last_name;
-                    document.getElementById('edit-email').value = data.email;
-                    document.getElementById('edit-username').value = data.username;
-
-                } else {
-                    console.error('Failed to fetch user profile data:', response.statusText);
+                } catch (error) {
+                    console.error('Error fetching user profile data:', error);
                 }
-            } catch (error) {
-                console.error('Error fetching user profile data:', error);
-            }
+    
+                document.getElementById('edit-userprofile-form').addEventListener('submit', handleEditProfile);
+            });
+        }
 
-            document.getElementById('edit-userprofile-form').addEventListener('submit', handleEditProfile);
-        });
+        const showErrorMessage = (field, message) => {
+            // Remove existing error message
+            const existingError = field.nextElementSibling;
+            if (existingError && existingError.classList.contains('error-message')) {
+                existingError.remove();
+            }
+            // Create a new error message
+            const errorSpan = document.createElement('span');
+            errorSpan.className = 'error-message';
+            errorSpan.style.color = 'red';
+            errorSpan.textContent = message;
+            field.parentNode.insertBefore(errorSpan, field.nextSibling);
+        };
+        
+        const validateFields = () => {
+            let isValid = true;
+            const fieldsToValidate = [
+                { id: 'edit-first-name', message: 'First name is required' },
+                { id: 'edit-last-name', message: 'Last name is required' },
+                { id: 'edit-email', message: 'Email is required' },
+                { id: 'edit-username', message: 'Username is required' }
+            ];
+        
+            fieldsToValidate.forEach(fieldInfo => {
+                const field = document.getElementById(fieldInfo.id);
+                if (!field.value.trim()) {
+                    showErrorMessage(field, fieldInfo.message);
+                    isValid = false;
+                }
+            });
+        
+            return isValid;
+        };
+
 
         const handleEditProfile = (event) => {
             event.preventDefault();
+            if (!validateFields()) {
+                return;
+            }
             const first_name = document.getElementById('edit-first-name').value;
             const last_name = document.getElementById('edit-last-name').value;
             const email = document.getElementById('edit-email').value;
@@ -692,12 +687,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
             formData.append('last_name', last_name);
             formData.append('email', email);
             formData.append('username', username);
-
             if (profile_img) {
                 formData.append('profile_img', profile_img);
             }
-
-
             fetch(`http://127.0.0.1:8000/userprofile/${user_id}/`, {
                 method: 'PATCH',
                 headers: {
@@ -708,8 +700,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .then(response => {
                 if (response.status === 200) {
                     alert('User Updated');
-                    edit_userprofile_data.style.display = 'none';
-                    postsDiv.style.display = 'block';
+                    edit_userprofile_div.style.display = 'none';
+                    posts_div.style.display = 'block';
                     loadDashboard();
                 } else {
                     return response.json().then(data => {
@@ -720,30 +712,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => console.error('Error:', error));
         };
     };
-    document.getElementById('searchUser').addEventListener('input', onSearch);
+    search_input.addEventListener('input', onSearch);
 
     async function onSearch() {
-        const searchInput = document.getElementById('searchUser').value;
-         // Replace with the actual token
-        const searchResultDiv = document.getElementById('search-result');
-
-        if (searchInput.trim() === '') {
-            searchResultDiv.innerHTML = ''; 
+        const searchInputValue = search_input.value;
+        if (searchInputValue.trim() === '') {
+            search_result_div.innerHTML = ''; 
             return;
         }
-
         try {
-            const response = await fetch(`http://127.0.0.1:8000/searchuser/?search=${searchInput}`, {
+            const response = await fetch(`http://127.0.0.1:8000/searchuser/?search=${searchInputValue}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            
             const data = await response.json();
             displayResults(data);
         } catch (error) {
@@ -752,18 +738,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function displayResults(data) {
-        const searchResultDiv = document.getElementById('search-result');
-        searchResultDiv.innerHTML = ''; 
+        search_result_div.innerHTML = ''; 
         console.log("search", data);
-    
         if (data.length === 0) {
-            searchResultDiv.innerHTML = '<p>No results found</p>';
+            search_result_div.innerHTML = '<p>No results found</p>';
             return;
         }
-        
         data.forEach(user => {
             let buttonHTML;
-    
             if (user.friend_request === "accepted") {
                 buttonHTML = `<button class="btn btn-danger unfollow-button" data-id="${user.id}">Unfollow</button>`;
             } else if (user.friend_request === "requested") {
@@ -771,7 +753,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             } else {
                 buttonHTML = `<button class="btn btn-success follow-button" data-id="${user.id}">Follow</button>`;
             }
-    
             const listItem = `
             <div class="form-outline mb-0 user-${user.username}">
                 <img src="${user.profile_img}" alt="${user.username}" width="50px" height="50px" data-id="${user.id}" class="profile-image">
@@ -780,51 +761,36 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 ${buttonHTML}
             </div><br/>
             `;
-            searchResultDiv.innerHTML += listItem;
+            search_result_div.innerHTML += listItem;
         });
         const profileImages = document.querySelectorAll('.profile-image');
         profileImages.forEach(image => {
             image.addEventListener('click', function() {
                 const userId = this.getAttribute('data-id');
-                console.log("hii")
-                edit_userprofile_data.style.display = 'none';
-                modal.style.display = 'none';
-                messagesDiv.style.display = 'none';
-                usersearchData.style.display = "none";
-                addpostDiv.style.display = 'none';
-                
-                postsDiv.style.display = 'none';
-                friendRequestsDiv.style.display = 'none';
-                userProfileDiv.style.display = 'block';
-                fetchsearchuserdataUser(userId)
+                toggleDisplay(userprofile_detail_div)
+                userprofile_detail_div.style.display = 'block';
+                fetchSearchUser(userId)
                 .then(data => {
-                    renderUserPostsGrid(data);
+                    renderUserPosts(data);
                 })
                 .catch(error => {
-        
                 });
             });
-        });
-
-    
-        searchResultDiv.addEventListener('click', (event) => {
+        });    
+        search_result_div.addEventListener('click', (event) => {
             if (event.target.classList.contains('message-button')) {
                 const userId = event.target.getAttribute('data-id');
-                const conversation_chat=document.getElementById('chat-convesation');
-                usersearchData.style.display = "none";
-                messagesDiv.style.display = "block";
-                conversation_chat.style.display = "none";
+                toggleDisplay(messages_div)
                 openChat(userId)
             }
         });
         
-        
-        searchResultDiv.addEventListener('click', (event) => {
+        search_result_div.addEventListener('click', (event) => {
             if (event.target.classList.contains('follow-button')) {
                 const userId = event.target.getAttribute('data-id');
                 
                 fetch(`http://127.0.0.1:8000/friendrequestsend/${userId}`, {
-                    method: 'GET',
+                    method: 'GET', 
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -842,8 +808,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
             }
         });
-        
-        searchResultDiv.addEventListener('click', (event) => {
+        search_result_div.addEventListener('click', (event) => {
             if (event.target.classList.contains('unfollow-button')) {
                 const userId = event.target.getAttribute('data-id');
                 console.log("hiii");
@@ -866,19 +831,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
             }
         });
-    
     }
     document.getElementById('addpost-link').addEventListener('click', (event) => {
         event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        modal.style.display = 'none';
-        messagesDiv.style.display = 'none'
-        postsDiv.style.display = 'none';
-        userProfileDiv.style.display = "none"
-        friendRequestsDiv.style.display = 'none';
-        usersearchData.style.display = "none";
-        addpostDiv.style.display = "block";
-        addpostDiv.innerHTML = `
+        toggleDisplay(addpost_div)
+        addpost_div.innerHTML = `
             <section class="vh-100">
                 <div class="row d-flex justify-content-center align-items-center h-100">
                     <div class="col-lg-12 col-xl-11">
@@ -895,7 +852,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                                             </div>
                                             <div class="d-flex flex-row align-items-center mb-4">
                                                 <div class="form-outline flex-fill mb-0">
-                                                    <input type="file" id="files" name="files[]" class="form-control" accept="image/*" multiple />
+                                                    <input type="file" id="files" name="files[]" class="form-control" accept="image/*" multiple required/>
                                                 </div>
                                             </div>
                                             <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
@@ -942,37 +899,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     
     document.getElementById('searchuser-link').addEventListener('click', (event) => {
         event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        modal.style.display = 'none';
-        addpostDiv.style.display = 'none';
-        usersearchData.style.display = "block";
-        friendRequestsDiv.style.display = 'none';
-        messagesDiv.style.display = 'none';
-        userProfileDiv.style.display = 'none';
-        postsDiv.style.display = 'none';
+        toggleDisplay(user_search_div)
     })
-
 
     document.getElementById('message-link').addEventListener('click', (event) => {
         event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        modal.style.display = 'none';
-        addpostDiv.style.display = 'none';
-        usersearchData.style.display = "none";
-        friendRequestsDiv.style.display = 'none';
-        userProfileDiv.style.display = 'none';
-        postsDiv.style.display = 'none';
-        messagesDiv.style.display = 'block';
-        const chat_conversation = document.getElementById('chat-convesation');
-        const chatDiv = document.getElementById('chatDiv');
-        chatDiv.style.display = 'none';
-        chat_conversation.style.display='block';
-        chat_conversation.innerHTML = '';
+        toggleDisplay(messages_div)                             
+        chat_div.style.display = 'none';
+        chat_conversation_div.style.display='block';
+        chat_conversation_div.innerHTML = '';
         fetchConversations()
             .then(data => {
-
                 data.forEach(reciever => {
-                    console.log(reciever)
+                    console.log(reciever.participants[0].profile_image)
                     const conversation = `
                             <div class="form-outline mb-0 chats">
                                 <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
@@ -981,9 +920,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                             <hr>
                         
                 `;
-                chat_conversation.innerHTML += conversation;
+                chat_conversation_div.innerHTML += conversation;
                 });
-
                 document.querySelectorAll('.profile-image').forEach(img => {
                     img.addEventListener('click', (event) => {
                         const userId = event.target.getAttribute('data-id');
@@ -991,17 +929,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     });
                 });
             })
-
             .catch(error => {
                 console.error('Error fetching posts:', error);
             });
     });
 
-    let currentSocket = null; // Declare currentSocket outside the function if not already declared
+    let currentSocket = null; 
+    let sendMessageButtonListenerAdded = false;
 
     function openChat(userId) {
-        const chatDiv = document.getElementById('chatDiv');
-        chatDiv.style.display = 'block';
+        console.log(userId)
+        chat_div.style.display = 'block';
         const chatMessageDiv = document.getElementById('ChatMessageDiv');
         chatMessageDiv.innerHTML = ''; 
 
@@ -1014,12 +952,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data.conversation_name.conversation_name)
+            console.log(data.conversation_name.conversation_name);
+
             if (currentSocket) {
                 currentSocket.close();
             }
-            
+
             currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${data.conversation_name.conversation_name}/?token=${token}`);
+
             currentSocket.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 const messages = Array.isArray(data) ? data : [data];
@@ -1043,30 +983,30 @@ document.addEventListener('DOMContentLoaded', (event) => {
             };
 
             const sendMessage = (content) => {
-                console.log(content)
-                currentSocket.send(JSON.stringify(content));
+                if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+                    currentSocket.send(JSON.stringify(content));
+                }
             };
 
-            document.getElementById('sendMessageButton').addEventListener('click', () => {
-                const messageContent = document.getElementById('messageInput').value;
-                sendMessage(messageContent);
-                document.getElementById('messageInput').value = ''; // Clear the input field
-            });
+            if (!sendMessageButtonListenerAdded) {
+                document.getElementById('sendMessageButton').addEventListener('click', () => {
+                    const messageContent = document.getElementById('messageInput').value;
+
+                    sendMessage(messageContent);
+                    document.getElementById('messageInput').value = '';
+                });
+                sendMessageButtonListenerAdded = true;
+            }
         })
         .catch(error => {
             console.error('Error fetching conversation:', error);
         });
     }
+
     document.getElementById('home-link').addEventListener('click', (event) => {
         event.preventDefault();
-        edit_userprofile_data.style.display = 'none';
-        modal.style.display = 'none';
-        messagesDiv.style.display = 'none'
-        addpostDiv.style.display = 'none';
-        usersearchData.style.display = "none";
-        friendRequestsDiv.style.display = 'none';
-        userProfileDiv.style.display = 'none';
-        postsDiv.style.display = "block";
+        toggleDisplay(posts_div)
         loadDashboard()
     });
 });
+    
