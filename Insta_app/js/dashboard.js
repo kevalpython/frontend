@@ -3,59 +3,52 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const dashboard = document.querySelector('#dashboard');
     event.preventDefault();
     dashboard.innerHTML = `
-      <div class="container-fluid">
+    <div class="container-fluid">
         <div class="row">
-          <div class="col-md-2 sidebar">
-            <ul class="sidebar-nav">
-              <li><a href="#" id="home-link">Home</a></li>
-              <li><a href="#" id="addpost-link">Add post</a></li>
-              <li><a href="#" id="searchuser-link">Search</a></li>
-              <li><a href="#" id="message-link">Message</a></li>
-              <li><a href="#" id="friendrequest-link">Friend request</a></li>
-              <li><a href="#" id="logout-link">Logout</a></li>
-            </ul>
-          </div>
-          <div class="col-md-6 posts-div" id="posts-div">
-            <!-- Posts Section -->
-          </div>
-          <div class="col-md-6 addpost-div" id="addpost-div" style="display: none;">
-            <!-- User addpost Section -->
-          </div>
-          <div class="col-md-6 messages-div" id="messages-div" style="display: none;">
-          <div class="row">
-          <div class="col-md-4 chat-convesation-div" id="chat-convesation-div">
-          </div>
-            <div class="col-md-8 chat-div" id="chat-div" style="display: none;">
-                <div class="col-md-12 chat-message-Div" id="ChatMessageDiv">
+            <div class="col-md-2 sidebar">
+                <ul class="sidebar-nav">
+                    <li><a href="#" id="home-link">Home</a></li>
+                    <li><a href="#" id="addpost-link">Add post</a></li>
+                    <li><a href="#" id="searchuser-link">Search</a></li>
+                    <li><a href="#" id="message-link">Message</a><div id="notification-id" style="display:none"><i class="fa fa-bell float-right" id="notification-icon"></i></div></li>
+                    <li><a href="#" id="friendrequest-link">Friend request</a></li>
+                    <li><a href="#" id="userprofile-link">User profile</a></li>
+                    <li><a href="#" id="logout-link">Logout</a></li>
+                </ul>
+            </div>
+            <div class="col-md-10 posts-div" id="posts-div">
+            </div>
+            <div class="col-md-10 addpost-div" id="addpost-div" style="display: none;">
+            </div>
+            <div class="col-md-10 messages-div" id="messages-div" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4 chat-convesation-div" id="chat-convesation-div">
+                    </div>
+                    <div class="col-md-8 chat-div" id="chat-div" style="display: none;">
+                        <div class="col-md-12 chat-message-Div" id="ChatMessageDiv">
+                        </div>
+                        <div class="col-md-12 chat-input-div" id="ChatInputDiv">
+                            <br/>
+                            <input type="text" id="messageInput" style="width:90%" name="messageInput">
+                            <button id="sendMessageButton" type="button">Send</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-12 chat-input-div" id="ChatInputDiv">
-                    <div ></div>
-                    <input type="text" id="messageInput" name="messageInput">
-                    <button id="sendMessageButton" type="button">Send</button>
+            </div>
+            <div class="col-md-10 friend-requests-div" id="friend-requests-div" style="display: none;">
+            </div>
+            <div class="col-md-10 userprofile-detail-div" id="userprofile-detail-div" style="display: none;">
+            </div>
+            <div class="col-md-10 edit-userprofile-div" id="edit-userprofile-div" style="display: none;">
+            </div>
+            <div class="col-md-10 user-search-div" id="user-search-div" style="display: none;">
+                <input type="text" class="col-sm-6 form-control" id="searchUser" name="searchUser" placeholder="Search">
+                <br/><br/>
+                <div id="search-result-div">
                 </div>
             </div>
         </div>
-            <!-- User Profile data Section -->
-          </div>
-          <div class="col-md-6 friend-requests-div" id="friend-requests-div" style="display: none;">
-            <!-- Friend Requests Section -->
-          </div>
-          <div class="col-md-6 userprofile-detail-div" id="userprofile-detail-div" style="display: none;">
-            <!-- User Profile data Section -->
-          </div>
-          <div class="col-md-6 edit-userprofile-div" id="edit-userprofile-div" style="display: none;">
-            <!-- User Profile data Section -->
-          </div>
-          <div class="col-md-6 user-search-div" id="user-search-div" style="display: none;">
-            <input type="text" class="col-sm-6 form-control" id="searchUser" name="searchUser" placeholder="Search">
-            <br/><br/>
-            <div id="search-result-div"></div>
-          </div>
-          <div class="col-md-3 userprofile-div" id="userprofile-div">
-            <!-- User Profile Section -->
-          </div>
-        </div>
-      </div>
+    </div>
     `;
 
     const token = localStorage.getItem('access');
@@ -76,6 +69,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const modal = document.getElementById('commentModal');
     const span = document.getElementsByClassName('close')[0];
     const submit_comment_button = document.getElementById('submitComment');
+
+    
     
     function toggleDisplay(elementToShow) {
         const elements = [
@@ -119,27 +114,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             return data
          
         } catch (error) {
-            console.error('There was a problem with the fetch operation:', error);
+            alert('There was a problem with the fetch operation:', error);
         }
-    };
-
-    const fetchPostsUser = () => {
-        return fetch('http://127.0.0.1:8000/post/', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 403 || response.status === 400) {
-                    window.location.href = 'index.html';
-                }
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        });
     };
 
     const fetchSearchUser = (userId) => {
@@ -161,29 +137,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     };
 
-    const fetchUserProfile = async () => {
-        try {
-            const response = await fetch(`http://127.0.0.1:8000/userprofile/${user_id}/`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (!response.ok) {
-                if (response.status === 403 || response.status === 400) {
-                    window.location.href = 'index.html';
-                }
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            const data = await response.json();
-            return data;
-        } catch (error) {
-            console.error('Fetch user profile failed:', error);
-            throw error;
-        }
-    };
-
     const fetchConversations = () => {
         return fetch(`http://127.0.0.1:8000/conversation/`, {
             method: 'GET',
@@ -193,6 +146,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         })
         .then(response => {
+
             if (!response.ok) {
                 if (response.status === 403 || response.status === 400) {
                     window.location.href = 'index.html';
@@ -200,6 +154,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 throw new Error('Network response was not ok ' + response.statusText);
             }
             return response.json();
+        })
+        .catch(error => {
+            alert('Error posting comment:', error);
         });
     };
 
@@ -292,7 +249,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         loadDashboard()
                     })
                     .catch(error => {
-                        console.error('Error liking post:', error);
+                        alert('Error liking post:', error);
                     });
             });
             postDiv.appendChild(likeButton);
@@ -307,7 +264,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const likesParagraph = document.createElement('p');
             likesParagraph.textContent = `Likes (${post.total_likes})`;
             postDiv.appendChild(likesParagraph);
-
             posts_div.appendChild(postDiv);
         });
     };
@@ -364,32 +320,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 return response.json(); 
             })
             .then(data => {
-                
                 closeModal(); 
             })
             .catch(error => {
-                console.error('Error posting comment:', error);
+                alert('Error posting comment:', error);
             });
         }
     });
 
-    const renderUserProfile = (data) => {
-        const userProfile_Div = document.getElementById('userprofile-div');
-        userProfile_Div.innerHTML = '';
-        const profileImage = document.createElement('img');
-        profileImage.id = 'profile-image';
-        profileImage.src = data.profile_img;
-        profileImage.alt = 'Profile Image';
-        profileImage.width = 100;
-        profileImage.height = 100;
-        const username = document.createElement('p');
-        username.textContent = data.username;
-        userProfile_Div.appendChild(profileImage);
-        userProfile_Div.appendChild(username)    ;
-    };
-
     const renderFriendRequests = (data) => {
-        console.log("console.loga",data)
         friend_requests_div.innerHTML = '';
         data.forEach(request => {
             const requestDiv = document.createElement('div');
@@ -415,7 +354,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => {
-                    console.log(response)
                     if (response.status === 201) {
                         fetchFriendRequests()
                         .then(data => {
@@ -439,7 +377,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => {
-                    console.log(response)
                     if (response.status === 201) {
                         fetchFriendRequests()
                         .then(data => {
@@ -458,29 +395,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
 
     };
-
-    const loadDashboard = () => {
-        Promise.all([fetchPosts(), fetchUserProfile()])
-            .then(([postsData, userProfileData]) => {
-                renderPosts(postsData);
-                renderUserProfile(userProfileData);
-            })
-            .catch(error => {
-            });
-    };
-    loadDashboard();
-    
     document.getElementById('friendrequest-link').addEventListener('click', (event) => {
         event.preventDefault(); 
         toggleDisplay(friend_requests_div);
-        console.log("11111111")
         fetchFriendRequests()
-            .then(data => {
-                console.log("11111111",data)
-                renderFriendRequests(data);
-            })
-            .catch(error => {
-            });
+        .then(data => {
+            renderFriendRequests(data);
+        })
+        .catch(error => {
+        });
     });
     document.getElementById('logout-link').addEventListener('click', (event) => {
         event.preventDefault();
@@ -503,21 +426,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => {
             });
     });
-    document.getElementById('userprofile-div').addEventListener('click', (event) => {
-        event.preventDefault();
-        toggleDisplay(userprofile_detail_div);
-        fetchPostsUser()
-        .then(data => {
-            renderUserPosts(data);
-        })
-        .catch(error => {
-        });
-    });
 
-    const renderUserPosts = (data) => {
-        console.log("=====>", data);
-        console.log("=====>", data.username.username);
-    
+    const renderUserPosts = (data) => {    
         let editProfileButton = '';
         if (login_username === data.username.username) {
             editProfileButton = `<a href="#" id="edit-profile-link"><button type="button" class="btn btn-secondary btn-sm">Edit Profile</button></a>`;
@@ -627,10 +537,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         document.getElementById('edit-email').value = data.email;
                         document.getElementById('edit-username').value = data.username;
                     } else {
-                        console.error('Failed to fetch user profile data:', response.statusText);
+                        alert('Failed to fetch user profile data:', response.statusText);
                     }
                 } catch (error) {
-                    console.error('Error fetching user profile data:', error);
+                    alert('Error fetching user profile data:', error);
                 }
     
                 document.getElementById('edit-userprofile-form').addEventListener('submit', handleEditProfile);
@@ -709,7 +619,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     });
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => alert('User Not Updated: ' + error));
         };
     };
     search_input.addEventListener('input', onSearch);
@@ -733,13 +643,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const data = await response.json();
             displayResults(data);
         } catch (error) {
-            console.error('There has been a problem with your fetch operation:', error);
+            alert('There has been a problem with your fetch operation:', error);
         }
     }
 
     function displayResults(data) {
         search_result_div.innerHTML = ''; 
-        console.log("search", data);
         if (data.length === 0) {
             search_result_div.innerHTML = '<p>No results found</p>';
             return;
@@ -774,9 +683,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     renderUserPosts(data);
                 })
                 .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error)
                 });
             });
         });    
+
         search_result_div.addEventListener('click', (event) => {
             if (event.target.classList.contains('message-button')) {
                 const userId = event.target.getAttribute('data-id');
@@ -797,21 +708,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => {
-
                     if (response.status === 201) {
-                        console.log("hiiii");
+                        fetchFriendRequests()
+                        .then(data => {
+                            renderFriendRequests(data);
+                        })
+                        .catch(error => {
+                        });
                     }
+
                     return response.json();
                 })
                 .catch(error => {
-                    console.error('There has been a problem with your fetch operation:', error);
+                    alert('There has been a problem with your fetch operation:', error);
                 });
             }
         });
+
         search_result_div.addEventListener('click', (event) => {
             if (event.target.classList.contains('unfollow-button')) {
                 const userId = event.target.getAttribute('data-id');
-                console.log("hiii");
                 fetch(`http://127.0.0.1:8000/unfollowfriendrequest/${userId}`, {
                     method: 'DELETE',
                     headers: {
@@ -820,14 +736,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => {
-                    console.log(response);
-                    if (response.status === 201) {
-                        console.log("hiiii");
-                    }
                     return response.json();
                 })
                 .catch(error => {
-                    console.error('There has been a problem with your fetch operation:', error);
+                    alert('There has been a problem with your fetch operation:', error);
                 });
             }
         });
@@ -886,15 +798,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
             body: formData,
         })
             .then(response => {
+                console.log()
                 if (response.status === 201) {
                     alert('Post Created');
+                    toggleDisplay(posts_div)
+                    loadDashboard()
                 } else {
                     return response.json().then(data => {
                         alert('Post not Created: ' + data.message);
                     });
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => alert('Post not Created: ' + error));
     };
     
     document.getElementById('searchuser-link').addEventListener('click', (event) => {
@@ -904,6 +819,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     document.getElementById('message-link').addEventListener('click', (event) => {
         event.preventDefault();
+        
         toggleDisplay(messages_div)                             
         chat_div.style.display = 'none';
         chat_conversation_div.style.display='block';
@@ -911,15 +827,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         fetchConversations()
             .then(data => {
                 data.forEach(reciever => {
-                    console.log(reciever.participants[0].profile_image)
                     const conversation = `
-                            <div class="form-outline mb-0 chats">
-                                <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
-                                ${reciever.participants[0].username}
-                            </div>
-                            <hr>
-                        
-                `;
+                        <div class="form-outline mb-0 chats">
+                            <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
+                            ${reciever.participants[0].username}
+                        </div>
+                        <hr>
+                    `;
                 chat_conversation_div.innerHTML += conversation;
                 });
                 document.querySelectorAll('.profile-image').forEach(img => {
@@ -930,7 +844,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
             })
             .catch(error => {
-                console.error('Error fetching posts:', error);
+                console.log(error)
+                alert('Error fetching posts:', error)
             });
     });
 
@@ -938,7 +853,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let sendMessageButtonListenerAdded = false;
 
     function openChat(userId) {
-        console.log(userId)
         chat_div.style.display = 'block';
         const chatMessageDiv = document.getElementById('ChatMessageDiv');
         chatMessageDiv.innerHTML = ''; 
@@ -952,42 +866,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data.conversation_name.conversation_name);
-
             if (currentSocket) {
                 currentSocket.close();
             }
-
             currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${data.conversation_name.conversation_name}/?token=${token}`);
-
             currentSocket.onmessage = function (event) {
                 const data = JSON.parse(event.data);
                 const messages = Array.isArray(data) ? data : [data];
                 messages.forEach(message => {
-                    const alignmentClass = message.sender === userId ? 'message-right' : 'message-left';
+                    const alignmentClass = message.sender_username === login_username ? 'message-right' : 'message-left';
+                    console.log(message)
                     const messageHTML = `
                         <div class="${alignmentClass}">
-                            <strong>${message.sender}</strong>: ${message.text}
+                            <strong>${message.sender_username}</strong>: ${message.text}
                         </div>
                     `;
                     chatMessageDiv.innerHTML += messageHTML;
                 });
             };
-
             currentSocket.onclose = function (event) {
                 console.log('WebSocket closed:', event);
             };
-
             currentSocket.onerror = function (error) {
-                console.error('WebSocket error:', error);
+                alert('WebSocket error:', error);
             };
-
             const sendMessage = (content) => {
                 if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
                     currentSocket.send(JSON.stringify(content));
                 }
             };
-
             if (!sendMessageButtonListenerAdded) {
                 document.getElementById('sendMessageButton').addEventListener('click', () => {
                     const messageContent = document.getElementById('messageInput').value;
@@ -999,14 +906,82 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         })
         .catch(error => {
-            console.error('Error fetching conversation:', error);
+            alert('Error fetching conversation: ' + error);
         });
     }
+    
+    document.getElementById('userprofile-link').addEventListener('click', (event) => {
+        event.preventDefault();
+        toggleDisplay(userprofile_detail_div)
+        fetchSearchUser(user_id)
+        .then(data => {
+            renderUserPosts(data);
+        })
+        .catch(error => {
+            alert('There has been a problem with your fetch operation:', error)
+        });
+    })
+
+
+    const loadDashboard = () => {
+        fetchPosts()
+            .then(postsData => {
+                renderPosts(postsData);
+            })
+            .catch(error => {
+                alert("dashboard not reload",)
+            });
+    };
+    loadDashboard();
 
     document.getElementById('home-link').addEventListener('click', (event) => {
         event.preventDefault();
         toggleDisplay(posts_div)
         loadDashboard()
     });
+
+    function initializeWebSocket(username) {
+        const currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${username}/`);
+        
+        currentSocket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            console.log(data)
+            handleNotification(data);
+        };
+
+        currentSocket.onclose = function (event) {
+            console.log('WebSocket closed:', event);
+            setTimeout(() => {
+                initializeWebSocket(username);
+            }, 5000);
+        };
+
+        currentSocket.onerror = function (error) {
+            console.error('WebSocket error:', error);
+        };
+
+        return currentSocket;
+    }
+
+    function handleNotification(data) {
+        if (data != 0) {
+            console.log(`New notification count: ${data}`);
+            updateNotificationUI(data);
+        }
+    }
+
+    function updateNotificationUI(data) {
+        console.log(data.count)
+
+        const notification_id = document.getElementById('notification-id');
+        if (data.count != 0) {
+            notification_id.style.display="block"
+            let notification_icon = document.getElementById('notification-icon');
+            notification_icon.textContent = data.count;
+        } else {
+            console.log('Notification element not found');
+        }
+    }
+    initializeWebSocket(login_username);
+        
 });
-    

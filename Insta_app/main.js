@@ -150,9 +150,17 @@ const handleLogin = (event) => {
     },
     body: JSON.stringify({ username, password }),
   })
-  .then(response => response.json())
+  .then(response => {
+    if (response.ok) {
+      return response.json();
+    } else {
+      return response.json().then(error_data => {
+        throw new Error(error_data.msg || 'Login failed');
+      });
+    }
+  })
   .then(data => {
-    if (data.token.access) {
+    if (data.token && data.token.access) {
       localStorage.setItem('access', data.token.access);
       localStorage.setItem('refresh', data.token.refresh);
       localStorage.setItem('username', data.user.username);
@@ -163,8 +171,12 @@ const handleLogin = (event) => {
       alert('Login failed!');
     }
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => {
+    console.error('Error:', error.message);
+    alert(error.message);
+  });
 };
+
 
 const handleRegister = (event) => {
   event.preventDefault();
@@ -191,7 +203,6 @@ const handleRegister = (event) => {
     body: formData,
   })
   .then(response => {
-    console.log(response)
     if (response.status === 201) {
       alert('Register successful!');
       loadForm('login');
@@ -201,7 +212,7 @@ const handleRegister = (event) => {
       });
     }
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => console.log('Error:', error.msg));
 };
 
 loadForm('login');
