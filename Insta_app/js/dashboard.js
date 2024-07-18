@@ -825,17 +825,38 @@ document.addEventListener('DOMContentLoaded', (event) => {
         chat_conversation_div.style.display='block';
         chat_conversation_div.innerHTML = '';
         fetchConversations()
-            .then(data => {
-                data.forEach(reciever => {
+        .then(data => {
+            data.forEach(reciever => {
                     const conversation = `
-                        <div class="form-outline mb-0 chats">
-                            <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
-                            ${reciever.participants[0].username}
-                        </div>
-                        <hr>
+                    <div class="form-outline mb-0 chats">
+                        <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
+                        ${reciever.participants[0].username}<div id="notification-${reciever.conversation_name}-id" style="display:none"><i class="fa fa-bell float-right" id="notification-${reciever.conversation_name}-icon"></i></div>
+                        
+                    </div>
+                    <hr>
                     `;
                 chat_conversation_div.innerHTML += conversation;
+                currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/reciever/${reciever.conversation_name}/?token=${token}`);
+                currentSocket.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+                    console.log(reciever.participants[0].username,data)
+                    if (data.count != 0) {
+                        console.log(reciever.participants[0].username,data.count)
+                        handleuserNotification(data,reciever.conversation_name)
+                    }
+                };
+                
+                currentSocket.onclose = function (event) {
+                    console.log('WebSocket closed:', event);
+                };
+                
+                currentSocket.onerror = function (error) {
+                    console.error('WebSocket error:', error);
+                };
+                
+                return currentSocket;
                 });
+                
                 document.querySelectorAll('.profile-image').forEach(img => {
                     img.addEventListener('click', (event) => {
                         const userId = event.target.getAttribute('data-id');
@@ -844,10 +865,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 });
             })
             .catch(error => {
-                console.log(error)
                 alert('Error fetching posts:', error)
             });
+            function handleuserNotification(data,conversation_name) {
+                const notification_id = document.getElementById(`notification-${conversation_name}-id`);
+                console.log(data,conversation_name)
+                if (data.count != 0) {
+                    notification_id.style.display="block"
+                    let notification_icon = document.getElementById(`notification-${conversation_name}-icon`);
+                    notification_icon.textContent = data.count;
+                } else {
+                    console.log('Notification element not found');
+                }
+            }
     });
+
 
     let currentSocket = null; 
     let sendMessageButtonListenerAdded = false;
@@ -875,7 +907,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const messages = Array.isArray(data) ? data : [data];
                 messages.forEach(message => {
                     const alignmentClass = message.sender_username === login_username ? 'message-right' : 'message-left';
-                    console.log(message)
+                    
                     const messageHTML = `
                         <div class="${alignmentClass}">
                             <strong>${message.sender_username}</strong>: ${message.text}
@@ -945,7 +977,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         
         currentSocket.onmessage = function (event) {
             const data = JSON.parse(event.data);
-            console.log(data)
             handleNotification(data);
         };
 
@@ -964,21 +995,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleNotification(data) {
-        if (data != 0) {
-            console.log(`New notification count: ${data}`);
-            updateNotificationUI(data);
-        }
-    }
-
-    function updateNotificationUI(data) {
-        console.log(data.count)
-
+        console.log(data)
         const notification_id = document.getElementById('notification-id');
         if (data.count != 0) {
             notification_id.style.display="block"
             let notification_icon = document.getElementById('notification-icon');
             notification_icon.textContent = data.count;
         } else {
+            notification_id.style.display="none"
             console.log('Notification element not found');
         }
     }
