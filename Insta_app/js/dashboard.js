@@ -183,26 +183,50 @@ document.addEventListener('DOMContentLoaded', (event) => {
         data.forEach(post => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
+    
+            // Username
             const username = document.createElement('div');
             username.textContent = post.user_name;
             postDiv.appendChild(username);
+    
+            // Media (Images/Videos)
             if (post.post_images_videos && post.post_images_videos.length > 0) {
                 let currentIndex = 0;
                 const mediaArray = post.post_images_videos;
-                const mediaElement = document.createElement('img');
-                mediaElement.src = mediaArray[currentIndex].file;
-                mediaElement.alt = 'image';
-                mediaElement.width = 200;
-                mediaElement.height = 200;
+                let mediaElement;
+    
+                const createMediaElement = (file) => {
+                    const ext = file.split('.').pop();
+                    let element;
+                    if (['mp4', 'webm', 'ogg'].includes(ext)) {
+                        element = document.createElement('video');
+                        element.src = file;
+                        element.controls = true;
+                    } else {
+                        element = document.createElement('img');
+                        element.src = file;
+                        element.alt = 'image';
+                    }
+                    element.width = 200;
+                    element.height = 200;
+                    return element;
+                };
+    
+                mediaElement = createMediaElement(mediaArray[currentIndex].file);
                 postDiv.appendChild(mediaElement);
+    
                 const updateMedia = () => {
-                    mediaElement.src = mediaArray[currentIndex].file;
+                    const newMediaElement = createMediaElement(mediaArray[currentIndex].file);
+                    postDiv.replaceChild(newMediaElement, mediaElement);
+                    mediaElement = newMediaElement;
                     updateButtonsVisibility();
                 };
+    
                 const updateButtonsVisibility = () => {
                     prevButton.style.display = currentIndex > 0 ? 'inline-block' : 'none';
                     nextButton.style.display = currentIndex < mediaArray.length - 1 ? 'inline-block' : 'none';
                 };
+    
                 const prevButton = document.createElement('button');
                 prevButton.textContent = 'Previous';
                 prevButton.style.display = 'none';
@@ -211,6 +235,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateMedia();
                 });
                 postDiv.appendChild(prevButton);
+    
                 const nextButton = document.createElement('button');
                 nextButton.textContent = 'Next';
                 nextButton.style.display = mediaArray.length > 1 ? 'inline-block' : 'none';
@@ -221,9 +246,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 postDiv.appendChild(nextButton);
                 updateButtonsVisibility();
             }
+    
             const contentParagraph = document.createElement('p');
             contentParagraph.textContent = post.content;
             postDiv.appendChild(contentParagraph);
+    
             const likeButton = document.createElement('button');
             likeButton.innerHTML = '<i class="fa fa-heart" style="font-size:20px;color:green"></i>';
             likeButton.className = 'like-button';
@@ -246,13 +273,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         } else {
                             likeButton.innerHTML = '<i class="fa fa-heart" style="font-size:20px;color:green"></i>';
                         }
-                        loadDashboard()
+                        loadDashboard();
                     })
                     .catch(error => {
                         alert('Error liking post:', error);
                     });
             });
             postDiv.appendChild(likeButton);
+    
+
             const commentButton = document.createElement('button');
             commentButton.innerHTML = '<i class="fa fa-comments-o" style="font-size:20px"></i>';
             commentButton.className = 'comment-button';
@@ -261,20 +290,24 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 openModal(post.id, post.comments);
             });
             postDiv.appendChild(commentButton);
+    
             const likesParagraph = document.createElement('p');
             likesParagraph.textContent = `Likes (${post.total_likes})`;
             postDiv.appendChild(likesParagraph);
+    
             posts_div.appendChild(postDiv);
         });
     };
-
+    
     function openModal(postID, postcomments) {
         const comments = Array.isArray(postcomments) ? postcomments : [postcomments]; 
         post_comment_div.innerHTML = ''
+        console.log(comments)
         comments.forEach(comment => {
             const commentHtml = `
                     <div class="DivComment">
-                        ${comment.content}
+                        <span id="comment-user-span">${comment.username}</span>:<span id="comment-span">${comment.content}</span>
+                       
                     </div>
                 `;
             post_comment_div.innerHTML += commentHtml;
@@ -428,21 +461,34 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     const renderUserPosts = (data) => {    
+        console.log(data)
+        
         let editProfileButton = '';
         if (login_username === data.username.username) {
             editProfileButton = `<a href="#" id="edit-profile-link"><button type="button" class="btn btn-secondary btn-sm">Edit Profile</button></a>`;
         }
     
-        userprofile_detail_div.innerHTML = `<div class="row"><div class="col-md-5">${data.username.username}</div>
-            <div class="col-md-7">${editProfileButton}</div>
+        userprofile_detail_div.innerHTML = `<div class="row">
+            <div class="col-md-5">${data.username.username}</div>
+            <div class="col-md-7" style="text-align:right">${editProfileButton}</div>
             </div>
             <div class="row">
-            <div class="col-md-5 "><h2>User Posts</h2></div>
-            <div class="col-md-7 ">
-            <div class="col-md-6"><h2>${data.total_posts}</h2><p>Posts</p></div>
-            <div class="col-md-6"><h2>${data.total_friends}</h2><p>Friends</p></div>
+                <div class="col-md-5">
+                    <img src="${data.username.profile_img}" alt="${data.username.username}" width="50px" height="50px" class="profile-image">
+                </div>
+                <div class="col-md-7">
+                    <div class="col-md-6">
+                        <h2>${data.total_posts}</h2>
+                        <p>Posts</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h2>${data.total_friends}</h2>
+                        <p>Friends</p>
+                    </div>
+                </div>
             </div>
-            </div><br><br><br>`;
+            <br><br><br>
+        `;
     
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'grid';
@@ -648,60 +694,61 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function displayResults(data) {
-        search_result_div.innerHTML = ''; 
+        search_result_div.innerHTML = '';
         if (data.length === 0) {
             search_result_div.innerHTML = '<p>No results found</p>';
             return;
         }
+    
         data.forEach(user => {
             let buttonHTML;
-            if (user.friend_request === "accepted") {
-                buttonHTML = `<button class="btn btn-danger unfollow-button" data-id="${user.id}">Unfollow</button>`;
-            } else if (user.friend_request === "requested") {
-                buttonHTML = `<button class="btn btn-secondary requested-button" data-id="${user.id}">Requested</button>`;
-            } else {
-                buttonHTML = `<button class="btn btn-success follow-button" data-id="${user.id}">Follow</button>`;
+            switch (user.friend_request) {
+                case 'accepted':
+                    buttonHTML = `<button class="btn btn-danger unfollow-button" data-id="${user.id}">Unfollow</button>`;
+                    break;
+                case 'requested':
+                    buttonHTML = `<button class="btn btn-secondary requested-button" data-id="${user.id}">Requested</button>`;
+                    break;
+                default:
+                    buttonHTML = `<button class="btn btn-success follow-button" data-id="${user.id}">Follow</button>`;
             }
+    
             const listItem = `
-            <div class="form-outline mb-0 user-${user.username}">
-                <img src="${user.profile_img}" alt="${user.username}" width="50px" height="50px" data-id="${user.id}" class="profile-image">
-                ${user.username}<br/>
-                <button class="btn btn-secondary message-button" data-id="${user.id}">Message<i class="fa fa-comments-o" style="font-size:20px"></i></button>
-                ${buttonHTML}
-            </div><br/>
+                <div class="form-outline mb-0 user-${user.username}">
+                    <img src="${user.profile_img}" alt="${user.username}" width="50px" height="50px" data-id="${user.id}" class="profile-image">
+                    ${user.username}<br/>
+                    <button class="btn btn-secondary message-button" data-id="${user.id}">Message<i class="fa fa-comments-o" style="font-size:20px"></i></button>
+                    ${buttonHTML}
+                </div><br/>
             `;
             search_result_div.innerHTML += listItem;
         });
-        const profileImages = document.querySelectorAll('.profile-image');
-        profileImages.forEach(image => {
-            image.addEventListener('click', function() {
-                const userId = this.getAttribute('data-id');
-                toggleDisplay(userprofile_detail_div)
+    
+        // Add event listeners
+        search_result_div.addEventListener('click', event => {
+            const target = event.target;
+            const userId = target.getAttribute('data-id');
+    
+            if (target.classList.contains('profile-image')) {
+                toggleDisplay(userprofile_detail_div);
                 userprofile_detail_div.style.display = 'block';
                 fetchSearchUser(userId)
-                .then(data => {
-                    renderUserPosts(data);
-                })
-                .catch(error => {
-                    alert('There has been a problem with your fetch operation:', error)
-                });
-            });
-        });    
-
-        search_result_div.addEventListener('click', (event) => {
-            if (event.target.classList.contains('message-button')) {
-                const userId = event.target.getAttribute('data-id');
-                toggleDisplay(messages_div)
-                openChat(userId)
+                    .then(data => {
+                        renderUserPosts(data);
+                    })
+                    .catch(error => {
+                        alert('There has been a problem with your fetch operation:', error);
+                    });
             }
-        });
-        
-        search_result_div.addEventListener('click', (event) => {
-            if (event.target.classList.contains('follow-button')) {
-                const userId = event.target.getAttribute('data-id');
-                
+    
+            if (target.classList.contains('message-button')) {
+                toggleDisplay(messages_div);
+                openChat(userId);
+            }
+    
+            if (target.classList.contains('follow-button')) {
                 fetch(`http://127.0.0.1:8000/friendrequestsend/${userId}`, {
-                    method: 'GET', 
+                    method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -710,24 +757,21 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 .then(response => {
                     if (response.status === 201) {
                         fetchFriendRequests()
-                        .then(data => {
-                            renderFriendRequests(data);
-                        })
-                        .catch(error => {
-                        });
+                            .then(data => {
+                                renderFriendRequests(data);
+                            })
+                            .catch(error => {
+                                alert('There has been a problem with your fetch operation:', error);
+                            });
                     }
-
                     return response.json();
                 })
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
             }
-        });
-
-        search_result_div.addEventListener('click', (event) => {
-            if (event.target.classList.contains('unfollow-button')) {
-                const userId = event.target.getAttribute('data-id');
+    
+            if (target.classList.contains('unfollow-button')) {
                 fetch(`http://127.0.0.1:8000/unfollowfriendrequest/${userId}`, {
                     method: 'DELETE',
                     headers: {
@@ -735,15 +779,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => {
-                    return response.json();
-                })
+                .then(response => response.json())
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
             }
         });
     }
+    
     document.getElementById('addpost-link').addEventListener('click', (event) => {
         event.preventDefault();
         toggleDisplay(addpost_div)
@@ -764,7 +807,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                                             </div>
                                             <div class="d-flex flex-row align-items-center mb-4">
                                                 <div class="form-outline flex-fill mb-0">
-                                                    <input type="file" id="files" name="files[]" class="form-control" accept="image/*" multiple required/>
+                                                    <input type="file" id="files" name="files[]" class="form-control" multiple required/>
                                                 </div>
                                             </div>
                                             <div class="d-flex justify-content-center mx-4 mb-3 mb-lg-4">
@@ -798,7 +841,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             body: formData,
         })
             .then(response => {
-                console.log()
                 if (response.status === 201) {
                     alert('Post Created');
                     toggleDisplay(posts_div)
@@ -834,27 +876,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         
                     </div>
                     <hr>
-                    `;
+                `;
                 chat_conversation_div.innerHTML += conversation;
-                currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/reciever/${reciever.conversation_name}/?token=${token}`);
-                currentSocket.onmessage = function (event) {
-                    const data = JSON.parse(event.data);
-                    console.log(reciever.participants[0].username,data)
-                    if (data.count != 0) {
-                        console.log(reciever.participants[0].username,data.count)
-                        handleuserNotification(data,reciever.conversation_name)
-                    }
-                };
-                
-                currentSocket.onclose = function (event) {
-                    console.log('WebSocket closed:', event);
-                };
-                
-                currentSocket.onerror = function (error) {
-                    console.error('WebSocket error:', error);
-                };
-                
-                return currentSocket;
+                openNotificationWebSocket(reciever.conversation_name)
                 });
                 
                 document.querySelectorAll('.profile-image').forEach(img => {
@@ -867,19 +891,37 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => {
                 alert('Error fetching posts:', error)
             });
-            function handleuserNotification(data,conversation_name) {
-                const notification_id = document.getElementById(`notification-${conversation_name}-id`);
-                console.log(data,conversation_name)
+            let notificationSocket = null;
+
+            function openNotificationWebSocket(conversationName) {
+                notificationSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/reciever/${conversationName}/?token=${token}`);
+
+                notificationSocket.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+                    handleuserNotification(data, conversationName);
+                };
+
+                notificationSocket.onclose = function (event) {
+                    console.log('Notification WebSocket closed:', event);
+                };
+
+                notificationSocket.onerror = function (error) {
+                    console.error('Notification WebSocket error:', error);
+                };
+            }
+
+            function handleuserNotification(data, conversationName) {
+                const notificationId = document.getElementById(`notification-${conversationName}-id`);
+
                 if (data.count != 0) {
-                    notification_id.style.display="block"
-                    let notification_icon = document.getElementById(`notification-${conversation_name}-icon`);
-                    notification_icon.textContent = data.count;
+                    notificationId.style.display = "block";
+                    let notificationIcon = document.getElementById(`notification-${conversationName}-icon`);
+                    notificationIcon.textContent = data.count;
                 } else {
-                    console.log('Notification element not found');
+                    notificationId.style.display = "none";
                 }
             }
     });
-
 
     let currentSocket = null; 
     let sendMessageButtonListenerAdded = false;
@@ -995,7 +1037,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     function handleNotification(data) {
-        console.log(data)
         const notification_id = document.getElementById('notification-id');
         if (data.count != 0) {
             notification_id.style.display="block"
@@ -1003,9 +1044,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             notification_icon.textContent = data.count;
         } else {
             notification_id.style.display="none"
-            console.log('Notification element not found');
         }
     }
     initializeWebSocket(login_username);
-        
 });
