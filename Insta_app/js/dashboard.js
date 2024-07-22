@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
 
     const fetchSearchUser = (userId) => {
-        return fetch(`http://127.0.0.1:8000/post/${userId}`, {
+        return fetch(`http://127.0.0.1:8000/userpost/${userId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         })
         .then(response => {
+           
             if (!response.ok) {
                 if (response.status === 403 || response.status === 400) {
                     window.location.href = 'index.html';
@@ -184,12 +185,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
     
-            // Username
             const username = document.createElement('div');
             username.textContent = post.user_name;
             postDiv.appendChild(username);
-    
-            // Media (Images/Videos)
             if (post.post_images_videos && post.post_images_videos.length > 0) {
                 let currentIndex = 0;
                 const mediaArray = post.post_images_videos;
@@ -374,7 +372,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             profileImg.style.borderRadius = '50%';  
             requestDiv.appendChild(profileImg);
             const username = document.createElement('div');
-            username.textContent = request.from_user;
+            if (request.from_user == login_username){
+                username.textContent = request.to_user;
+            } else {
+                username.textContent = request.from_user;
+            }   
             requestDiv.appendChild(username);
             const acceptButton = document.createElement('button');
             acceptButton.textContent = 'Accept';
@@ -426,8 +428,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             friend_requests_div.appendChild(requestDiv);
         });
-
     };
+
     document.getElementById('friendrequest-link').addEventListener('click', (event) => {
         event.preventDefault(); 
         toggleDisplay(friend_requests_div);
@@ -449,19 +451,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
             },
             body: JSON.stringify({ refresh_token }),
         })
-            .then(response => {
-                localStorage.removeItem('access');
-                localStorage.removeItem('refresh');
-                localStorage.removeItem('username');
-                localStorage.removeItem('user_id');
-                window.location.replace('index.html');
-            })
-            .catch(error => {
-            });
+        .then(response => {
+            localStorage.removeItem('access');
+            localStorage.removeItem('refresh');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user_id');
+            window.location.replace('index.html');
+        })
+        .catch(error => {
+        });
     });
 
     const renderUserPosts = (data) => {    
-        console.log(data)
+        
         
         let editProfileButton = '';
         if (login_username === data.username.username) {
@@ -489,30 +491,35 @@ document.addEventListener('DOMContentLoaded', (event) => {
             </div>
             <br><br><br>
         `;
-    
         const gridContainer = document.createElement('div');
         gridContainer.style.display = 'grid';
         gridContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
         data.posts.forEach(post => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post-grid';
+
             if (post.post_images_videos && post.post_images_videos.length > 0) {
-                const mediaElement = document.createElement('img');
+                const mediaElement = document.createElement(post.post_images_videos[0].file_type === 'video' ? 'video' : 'img');
                 mediaElement.src = post.post_images_videos[0].file;
-                mediaElement.alt = 'image';
+                mediaElement.alt = 'media';
                 mediaElement.width = 100;
                 mediaElement.height = 100;
+                if (post.post_images_videos[0].filetype === 'video') {
+                    mediaElement.controls = true; 
+                }
                 postDiv.appendChild(mediaElement);
+
                 mediaElement.addEventListener('click', () => {
                     userprofile_detail_div.style.display = 'none';
                     posts_div.style.display = 'block';
                     renderPosts(data.posts);
                 });
             }
+
             const contentParagraph = document.createElement('p');
             contentParagraph.textContent = post.content;
             postDiv.appendChild(contentParagraph);
-    
+
             gridContainer.appendChild(postDiv);
         });
         userprofile_detail_div.appendChild(gridContainer);
@@ -594,12 +601,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
 
         const showErrorMessage = (field, message) => {
-            // Remove existing error message
             const existingError = field.nextElementSibling;
             if (existingError && existingError.classList.contains('error-message')) {
                 existingError.remove();
             }
-            // Create a new error message
             const errorSpan = document.createElement('span');
             errorSpan.className = 'error-message';
             errorSpan.style.color = 'red';
@@ -699,15 +704,26 @@ document.addEventListener('DOMContentLoaded', (event) => {
             search_result_div.innerHTML = '<p>No results found</p>';
             return;
         }
-    
         data.forEach(user => {
             let buttonHTML;
             switch (user.friend_request) {
                 case 'accepted':
                     buttonHTML = `<button class="btn btn-danger unfollow-button" data-id="${user.id}">Unfollow</button>`;
                     break;
-                case 'requested':
+                case 'requested' :
                     buttonHTML = `<button class="btn btn-secondary requested-button" data-id="${user.id}">Requested</button>`;
+                    break;
+                case 'accept' :
+                    buttonHTML = `<button class="btn btn-secondary accept-button" data-id="${user.id}">Accept</button>`;
+                    break;
+                case 'follow_back_accept' :
+                    buttonHTML = `<button class="btn btn-secondary follow-back-accept-button" data-id="${user.id}">Follow back request accept</button>`;
+                    break;
+                case 'follow_back_request':
+                    buttonHTML = `<button class="btn btn-secondary follow-back-request-button" data-id="${user.id}">Follow back</button>`;
+                    break;
+                case 'follow_back_requested':
+                    buttonHTML = `<button class="btn btn-secondary follow-back-requested-button" data-id="${user.id}">Follow back requested</button>`;
                     break;
                 default:
                     buttonHTML = `<button class="btn btn-success follow-button" data-id="${user.id}">Follow</button>`;
@@ -724,7 +740,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
             search_result_div.innerHTML += listItem;
         });
     
-        // Add event listeners
         search_result_div.addEventListener('click', event => {
             const target = event.target;
             const userId = target.getAttribute('data-id');
@@ -745,32 +760,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 toggleDisplay(messages_div);
                 openChat(userId);
             }
-    
-            if (target.classList.contains('follow-button')) {
-                fetch(`http://127.0.0.1:8000/friendrequestsend/${userId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.status === 201) {
-                        fetchFriendRequests()
-                            .then(data => {
-                                renderFriendRequests(data);
-                            })
-                            .catch(error => {
-                                alert('There has been a problem with your fetch operation:', error);
-                            });
-                    }
-                    return response.json();
-                })
-                .catch(error => {
-                    alert('There has been a problem with your fetch operation:', error);
-                });
-            }
-    
+
             if (target.classList.contains('unfollow-button')) {
                 fetch(`http://127.0.0.1:8000/unfollowfriendrequest/${userId}`, {
                     method: 'DELETE',
@@ -780,6 +770,78 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => response.json())
+                .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error);
+                });
+            }
+            
+            
+            if (target.classList.contains('follow-back-request-button')) {
+                fetch(`http://127.0.0.1:8000/sendfollowbackrequest/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error);
+                });
+            }
+            
+
+            if (target.classList.contains('follow-back-accept-button')) {
+                fetch(`http://127.0.0.1:8000/acceptfollowbackrequest/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error);
+                });
+
+            }
+
+
+            if (target.classList.contains('accept-button')) {
+                fetch(`http://127.0.0.1:8000/acceptfollowrequest/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error);
+                });
+            }
+
+            if (target.classList.contains('follow-button')) {
+                fetch(`http://127.0.0.1:8000/friendrequestsend/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    console.log(response)
+                    if (response.status === 201) {
+                        fetchFriendRequests()
+                        .then(data => {
+                            renderFriendRequests(data);
+                        })
+                        .catch(error => {
+                            alert('There has been a problem with your fetch operation:', error);
+                        });
+                    }
+                    return response.json();
+                })
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
@@ -1032,7 +1094,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         currentSocket.onerror = function (error) {
             console.error('WebSocket error:', error);
         };
-
         return currentSocket;
     }
 
