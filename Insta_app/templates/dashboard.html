@@ -117,13 +117,23 @@
   <div id="dashboard"></div>
   <div id="commentModal" class="modal" style="display:none;">
     <div class="modal-content">
-      <span class="close">&times;</span>
+      <span id="CloseCommentModal" class="close">&times;</span>
       <br/>
       <div id="post-comment-div">
       </div>
       <div>
         <input type="text" id="commentInput" placeholder="comment">
         <button id="submitComment">Submit</button>
+      </div>
+    </div>
+  </div>
+  <div id="passwordModal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span id="ClosePasswordModal" class="close">&times;</span>
+      <br/>
+      <div>
+        <input type="password" id="passwordInput" placeholder="Password Confirmation">
+        <button id="submitPassword">Submit</button><br>
       </div>
     </div>
   </div>

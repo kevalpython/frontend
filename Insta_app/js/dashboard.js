@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     <li><a href="#" id="searchuser-link">Search</a></li>
                     <li><a href="#" id="message-link">Message</a><div id="notification-id" style="display:none"><i class="fa fa-bell float-right" id="notification-icon"></i></div></li>
                     <li><a href="#" id="friendrequest-link">Friend request</a></li>
+                    <li><a href="#" id="friendlist-link">Friend list</a></li>
                     <li><a href="#" id="userprofile-link">User profile</a></li>
                     <li><a href="#" id="logout-link">Logout</a></li>
                 </ul>
@@ -41,6 +42,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             </div>
             <div class="col-md-10 edit-userprofile-div" id="edit-userprofile-div" style="display: none;">
             </div>
+            <div class="col-md-10 friendslist-detail-div" id="friendslist-detail-div" style="display: none;">
+            </div>
             <div class="col-md-10 user-search-div" id="user-search-div" style="display: none;">
                 <input type="text" class="col-sm-6 form-control" id="searchUser" name="searchUser" placeholder="Search">
                 <br/><br/>
@@ -67,13 +70,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const chat_conversation_div = document.getElementById('chat-convesation-div');
     const chat_div = document.getElementById('chat-div');
     const modal = document.getElementById('commentModal');
-    const span = document.getElementsByClassName('close')[0];
+    const close_comment_modal = document.getElementById('CloseCommentModal');
     const submit_comment_button = document.getElementById('submitComment');
+    const passwordmodal = document.getElementById('passwordModal');
+    const submit_password_button = document.getElementById('submitPassword');
+    const close_password_modal = document.getElementById('ClosePasswordModal');
+    const friendslist_detail_div = document.getElementById('friendslist-detail-div');
 
-    
     
     function toggleDisplay(elementToShow) {
         const elements = [
+            friendslist_detail_div,
             edit_userprofile_div,
             messages_div,
             modal,
@@ -85,12 +92,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         ];
 
         elements.forEach(elementId => {
-            if (elementToShow == elementId){
-                elementToShow.style.display = 'block';    
-            }else{
+            if (elementToShow == elementId) {
+                elementToShow.style.display = 'block';
+            } else {
                 elementId.style.display = 'none';
             }
-        });       
+        });
     }
 
     const fetchPosts = async () => {
@@ -112,7 +119,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             const data = await response.json();
             return data
-         
+
         } catch (error) {
             alert('There was a problem with the fetch operation:', error);
         }
@@ -126,15 +133,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 403 || response.status === 400) {
-                    window.location.href = 'index.html';
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 403 || response.status === 400) {
+                        window.location.href = 'index.html';
+                    }
+                    throw new Error('Network response was not ok ' + response.statusText);
                 }
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        });
+                return response.json();
+            });
     };
 
     const fetchConversations = () => {
@@ -145,20 +152,44 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
+            .then(response => {
 
-            if (!response.ok) {
-                if (response.status === 403 || response.status === 400) {
-                    window.location.href = 'index.html';
+                if (!response.ok) {
+                    if (response.status === 403 || response.status === 400) {
+                        window.location.href = 'index.html';
+                    }
+                    throw new Error('Network response was not ok ' + response.statusText);
                 }
-                throw new Error('Network response was not ok ' + response.statusText);
+                return response.json();
+            })
+            .catch(error => {
+                alert('Error posting comment:', error);
+            });
+    }; 
+
+    const fetchFriendslist = () => {
+        return fetch(`http://127.0.0.1:8000/friendslist/`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
-            return response.json();
         })
-        .catch(error => {
-            alert('Error posting comment:', error);
-        });
+            .then(response => {
+
+                if (!response.ok) {
+                    if (response.status === 403 || response.status === 400) {
+                        window.location.href = 'index.html';
+                    }
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .catch(error => {
+                alert('Error posting comment:', error);
+            });
     };
+
 
     const fetchFriendRequests = () => {
         return fetch(`http://127.0.0.1:8000/friendrequestaccepted/`, {
@@ -168,31 +199,31 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => {
-           
-            if (!response.ok) {
-                if (response.status === 403 || response.status === 400) {
-                    window.location.href = 'index.html';
+            .then(response => {
+
+                if (!response.ok) {
+                    if (response.status === 403 || response.status === 400) {
+                        window.location.href = 'index.html';
+                    }
+                    throw new Error('Network response was not ok ' + response.statusText);
                 }
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        });
+                return response.json();
+            });
     };
-    const renderPosts = (data) => {  
+    const renderPosts = (data) => {
         posts_div.innerHTML = '';
         data.forEach(post => {
             const postDiv = document.createElement('div');
             postDiv.className = 'post';
-    
-            const username = document.createElement('div');
+
+            let username = document.createElement('div');
             username.textContent = post.user_name;
             postDiv.appendChild(username);
             if (post.post_images_videos && post.post_images_videos.length > 0) {
                 let currentIndex = 0;
                 const mediaArray = post.post_images_videos;
                 let mediaElement;
-    
+
                 const createMediaElement = (file) => {
                     const ext = file.split('.').pop();
                     let element;
@@ -209,22 +240,22 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     element.height = 200;
                     return element;
                 };
-    
+
                 mediaElement = createMediaElement(mediaArray[currentIndex].file);
                 postDiv.appendChild(mediaElement);
-    
+
                 const updateMedia = () => {
                     const newMediaElement = createMediaElement(mediaArray[currentIndex].file);
                     postDiv.replaceChild(newMediaElement, mediaElement);
                     mediaElement = newMediaElement;
                     updateButtonsVisibility();
                 };
-    
+
                 const updateButtonsVisibility = () => {
                     prevButton.style.display = currentIndex > 0 ? 'inline-block' : 'none';
                     nextButton.style.display = currentIndex < mediaArray.length - 1 ? 'inline-block' : 'none';
                 };
-    
+
                 const prevButton = document.createElement('button');
                 prevButton.textContent = 'Previous';
                 prevButton.style.display = 'none';
@@ -233,7 +264,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     updateMedia();
                 });
                 postDiv.appendChild(prevButton);
-    
+
                 const nextButton = document.createElement('button');
                 nextButton.textContent = 'Next';
                 nextButton.style.display = mediaArray.length > 1 ? 'inline-block' : 'none';
@@ -244,11 +275,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 postDiv.appendChild(nextButton);
                 updateButtonsVisibility();
             }
-    
+
             const contentParagraph = document.createElement('p');
             contentParagraph.textContent = post.content;
             postDiv.appendChild(contentParagraph);
-    
+
             const likeButton = document.createElement('button');
             likeButton.innerHTML = '<i class="fa fa-heart" style="font-size:20px;color:green"></i>';
             likeButton.className = 'like-button';
@@ -278,27 +309,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     });
             });
             postDiv.appendChild(likeButton);
-    
+
 
             const commentButton = document.createElement('button');
             commentButton.innerHTML = '<i class="fa fa-comments-o" style="font-size:20px"></i>';
             commentButton.className = 'comment-button';
             commentButton.setAttribute('data-toggle', 'modal');
             commentButton.addEventListener('click', () => {
-                openModal(post.id, post.comments);
+                openCommentModal(post.id, post.comments);
             });
             postDiv.appendChild(commentButton);
-    
+
             const likesParagraph = document.createElement('p');
             likesParagraph.textContent = `Likes (${post.total_likes})`;
             postDiv.appendChild(likesParagraph);
-    
+
             posts_div.appendChild(postDiv);
         });
     };
-    
-    function openModal(postID, postcomments) {
-        const comments = Array.isArray(postcomments) ? postcomments : [postcomments]; 
+
+    function openCommentModal(postID, postcomments) {
+        const comments = Array.isArray(postcomments) ? postcomments : [postcomments];
         post_comment_div.innerHTML = ''
         console.log(comments)
         comments.forEach(comment => {
@@ -317,7 +348,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         loadDashboard()
         modal.style.display = 'none';
     }
-    span.onclick = () => {
+    close_comment_modal.onclick = () => {
         closeModal();
     };
     window.onclick = (event) => {
@@ -340,43 +371,44 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'   
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(postData)
             })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); 
-            })
-            .then(data => {
-                closeModal(); 
-            })
-            .catch(error => {
-                alert('Error posting comment:', error);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    closeModal();
+                })
+                .catch(error => {
+                    alert('Error posting comment:', error);
+                });
         }
     });
 
     const renderFriendRequests = (data) => {
         friend_requests_div.innerHTML = '';
+        friend_requests_div.innerHTML = '<h1> Friend Request </h1>';
         data.forEach(request => {
             const requestDiv = document.createElement('div');
             requestDiv.className = 'request';
             const profileImg = document.createElement('img');
-            profileImg.src = request.from_user_img;
+            profileImg.src = request.user_img;
             profileImg.alt = 'Profile Image';
-            profileImg.style.width = '50px'; 
-            profileImg.style.height = '50px'; 
-            profileImg.style.borderRadius = '50%';  
+            profileImg.style.width = '50px';
+            profileImg.style.height = '50px';
+            profileImg.style.borderRadius = '50%';
             requestDiv.appendChild(profileImg);
-            const username = document.createElement('div');
-            if (request.from_user == login_username){
+            let username = document.createElement('div');
+            if (request.from_user == login_username) {
                 username.textContent = request.to_user;
             } else {
                 username.textContent = request.from_user;
-            }   
+            }
             requestDiv.appendChild(username);
             const acceptButton = document.createElement('button');
             acceptButton.textContent = 'Accept';
@@ -388,17 +420,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => {
-                    if (response.status === 201) {
-                        fetchFriendRequests()
-                        .then(data => {
-                            renderFriendRequests(data);
-                        })
-                        .catch(error => {
-                        });
-                    }
-                    return response.json();
-                });
+                    .then(response => {
+                        if (response.status === 201) {
+                            fetchFriendRequests()
+                                .then(data => {
+                                    renderFriendRequests(data);
+                                })
+                                .catch(error => {
+                                });
+                        }
+                        return response.json();
+                    });
             });
             requestDiv.appendChild(acceptButton);
             const declineButton = document.createElement('button');
@@ -411,18 +443,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => {
-                    if (response.status === 201) {
-                        fetchFriendRequests()
-                        .then(data => {
-                            renderFriendRequests(data);
-                        })
-                        .catch(error => {
-                        });
-                    }
-                    return response.json();
-                });
-                
+                    .then(response => {
+                        if (response.status === 201) {
+                            fetchFriendRequests()
+                                .then(data => {
+                                    renderFriendRequests(data);
+                                })
+                                .catch(error => {
+                                });
+                        }
+                        return response.json();
+                    });
             });
             requestDiv.appendChild(declineButton);
 
@@ -431,15 +462,96 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
 
     document.getElementById('friendrequest-link').addEventListener('click', (event) => {
-        event.preventDefault(); 
+        event.preventDefault();
         toggleDisplay(friend_requests_div);
         fetchFriendRequests()
-        .then(data => {
-            renderFriendRequests(data);
-        })
-        .catch(error => {
-        });
+            .then(data => {
+                renderFriendRequests(data);
+            })
+            .catch(error => {
+            });
     });
+
+    function renderFriendList(data) {
+        console.log(data)
+        friendslist_detail_div.innerHTML = '';
+        friendslist_detail_div.innerHTML = '<h1>Friend List</h1>';
+        data.forEach(friend => {
+            let username = "";
+            if (friend.from_user === login_username) {
+                username = friend.to_user;
+            } else {
+                username = friend.from_user;
+            }
+        
+            let buttonHTML = "";
+            if (friend.friend_request === 'follow_back_requested') {
+                buttonHTML = `<button class="btn btn-secondary follow-back-requested-button" data-id="${friend.user_id}">Follow back requested</button>`;
+            } else if (friend.friend_request === 'follow_back_request') {
+                buttonHTML = `<button class="btn btn-secondary follow-back-request-button" data-id="${friend.user_id}">Follow back</button>`;
+            }
+        
+            const listItem = `
+                <div class="form-outline mb-0 user-${username}">
+                    <img src="${friend.user_img}" alt="${username}" width="50px" height="50px" data-id="${friend.user_id}" class="profile-image">
+                    ${username}<br/>
+                    ${buttonHTML}
+                </div><br/><hr>
+            `;
+            friendslist_detail_div.innerHTML += listItem;
+        });
+        
+
+        friendslist_detail_div.addEventListener('click', event => {
+            const target = event.target;
+            const userId = target.getAttribute('data-id');
+            
+            if (target.classList.contains('profile-image')) {
+                toggleDisplay(userprofile_detail_div);
+                userprofile_detail_div.style.display = 'block';
+                fetchSearchUser(userId)
+                    .then(data => {
+                        renderUserPosts(data);
+                    })
+                    .catch(error => {
+                        alert('There has been a problem with your fetch operation:', error);
+                    });
+            }
+            if (target.classList.contains('follow-back-request-button')) {
+                fetch(`http://127.0.0.1:8000/sendfollowbackrequest/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.status === 201) {
+                        target.classList.remove('follow-back-request-button');
+                        target.classList.add('follow-back-requested-button');
+                        target.textContent = 'Follow back requested';
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    alert('There has been a problem with your fetch operation:', error);
+                });
+            }
+        })
+    }
+        
+
+    document.getElementById('friendlist-link').addEventListener('click', (event) => {
+        event.preventDefault();
+        toggleDisplay(friendslist_detail_div);
+        fetchFriendslist()
+            .then(data => {
+                renderFriendList(data);
+            })
+            .catch(error => {
+            });
+    })
+
     document.getElementById('logout-link').addEventListener('click', (event) => {
         event.preventDefault();
         const refresh_token = localStorage.getItem('refresh');
@@ -451,28 +563,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
             },
             body: JSON.stringify({ refresh_token }),
         })
-        .then(response => {
-            localStorage.removeItem('access');
-            localStorage.removeItem('refresh');
-            localStorage.removeItem('username');
-            localStorage.removeItem('user_id');
-            window.location.replace('index.html');
-        })
-        .catch(error => {
-        });
+            .then(response => {
+                localStorage.removeItem('access');
+                localStorage.removeItem('refresh');
+                localStorage.removeItem('username');
+                localStorage.removeItem('user_id');
+                window.location.replace('index.html');
+            })
+            .catch(error => {
+            });
     });
 
-    const renderUserPosts = (data) => {    
-        
-        
+    const renderUserPosts = (data) => {
+
         let editProfileButton = '';
+        let deleteProfileButton = '';
         if (login_username === data.username.username) {
             editProfileButton = `<a href="#" id="edit-profile-link"><button type="button" class="btn btn-secondary btn-sm">Edit Profile</button></a>`;
+            deleteProfileButton = `<a href="#" id="delete-profile-link"><button type="button" data-toggle="model" class="btn btn-danger btn-sm">Delete Account</button></a>`;
         }
-    
+
         userprofile_detail_div.innerHTML = `<div class="row">
             <div class="col-md-5">${data.username.username}</div>
-            <div class="col-md-7" style="text-align:right">${editProfileButton}</div>
+            <div class="col-md-7" style="text-align:right">${editProfileButton} ${deleteProfileButton}</div>
             </div>
             <div class="row">
                 <div class="col-md-5">
@@ -505,7 +618,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 mediaElement.width = 100;
                 mediaElement.height = 100;
                 if (post.post_images_videos[0].filetype === 'video') {
-                    mediaElement.controls = true; 
+                    mediaElement.controls = true;
                 }
                 postDiv.appendChild(mediaElement);
 
@@ -523,7 +636,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             gridContainer.appendChild(postDiv);
         });
         userprofile_detail_div.appendChild(gridContainer);
-    
+
         if (login_username === data.username.username) {
             document.getElementById('edit-profile-link').addEventListener('click', async (event) => {
                 event.preventDefault();
@@ -575,7 +688,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         </div>
                     </section>
                 `;
-    
+
                 try {
                     const response = await fetch(`http://127.0.0.1:8000/userprofile/${user_id}/`, {
                         method: 'GET',
@@ -595,53 +708,75 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 } catch (error) {
                     alert('Error fetching user profile data:', error);
                 }
-    
+
                 document.getElementById('edit-userprofile-form').addEventListener('submit', handleEditProfile);
             });
-        }
 
-        const showErrorMessage = (field, message) => {
-            const existingError = field.nextElementSibling;
-            if (existingError && existingError.classList.contains('error-message')) {
-                existingError.remove();
+            document.getElementById('delete-profile-link').addEventListener('click', async (event) => {
+                event.preventDefault();
+                openDeleteModel(user_id);
+            });
+            function openDeleteModel(userID) {
+                submit_password_button.setAttribute('data-userid', userID);
+                passwordmodal.style.display = 'block';
             }
-            const errorSpan = document.createElement('span');
-            errorSpan.className = 'error-message';
-            errorSpan.style.color = 'red';
-            errorSpan.textContent = message;
-            field.parentNode.insertBefore(errorSpan, field.nextSibling);
-        };
-        
-        const validateFields = () => {
-            let isValid = true;
-            const fieldsToValidate = [
-                { id: 'edit-first-name', message: 'First name is required' },
-                { id: 'edit-last-name', message: 'Last name is required' },
-                { id: 'edit-email', message: 'Email is required' },
-                { id: 'edit-username', message: 'Username is required' }
-            ];
-        
-            fieldsToValidate.forEach(fieldInfo => {
-                const field = document.getElementById(fieldInfo.id);
-                if (!field.value.trim()) {
-                    showErrorMessage(field, fieldInfo.message);
-                    isValid = false;
+            function closeModal() {
+                passwordmodal.style.display = 'none';
+            }
+            close_password_modal.onclick = () => {
+                console.log("hii")
+                closeModal();
+            };
+            window.onclick = (event) => {
+                if (event.target == passwordmodal) {
+                    closeModal();
+                }
+            };
+
+            submit_password_button.addEventListener('click', () => {
+                const passwordInput = document.getElementById('passwordInput');
+                const passwordText = passwordInput.value;
+                const user_delete_id = submit_password_button.getAttribute('data-userid');
+                if (passwordText) {
+                    passwordInput.value = '';
+                    const passwordData = {
+                        password: passwordText
+                    };
+                    fetch(`http://127.0.0.1:8000/userprofile/${user_delete_id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(passwordData)
+                    })
+                        .then(response => {
+                            if (response.status == 400) {
+                                return response.json();
+                            }
+                            if (response.status == 200) {
+                                window.location.href = 'index.html';
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            alert('Error posting password: ' + data.msg);
+                        })
+                        .catch(error => {
+                            console.log(error.message)
+                            alert('Error password:', error.messageContent);
+                        });
                 }
             });
-        
-            return isValid;
-        };
+        }
 
 
         const handleEditProfile = (event) => {
             event.preventDefault();
-            if (!validateFields()) {
-                return;
-            }
             const first_name = document.getElementById('edit-first-name').value;
             const last_name = document.getElementById('edit-last-name').value;
             const email = document.getElementById('edit-email').value;
-            const username = document.getElementById('edit-username').value;
+            let username = document.getElementById('edit-username').value;
             const profile_img = document.getElementById('edit-profile-img').files[0];
             const formData = new FormData();
             formData.append('first_name', first_name);
@@ -658,19 +793,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 },
                 body: formData,
             })
-            .then(response => {
-                if (response.status === 200) {
-                    alert('User Updated');
-                    edit_userprofile_div.style.display = 'none';
-                    posts_div.style.display = 'block';
-                    loadDashboard();
-                } else {
-                    return response.json().then(data => {
-                        alert('User Not Updated: ' + data.message);
-                    });
-                }
-            })
-            .catch(error => alert('User Not Updated: ' + error));
+                .then(response => {
+                    if (response.status === 200) {
+                        alert('User Updated');
+                        edit_userprofile_div.style.display = 'none';
+                        posts_div.style.display = 'block';
+                        loadDashboard();
+                    } else {
+                        return response.json().then(data => {
+                            alert('User Not Updated: ' + data.message);
+                        });
+                    }
+                })
+                .catch(error => alert('User Not Updated: ' + error));
         };
     };
     search_input.addEventListener('input', onSearch);
@@ -678,7 +813,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     async function onSearch() {
         const searchInputValue = search_input.value;
         if (searchInputValue.trim() === '') {
-            search_result_div.innerHTML = ''; 
+            search_result_div.innerHTML = '';
             return;
         }
         try {
@@ -710,13 +845,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 case 'accepted':
                     buttonHTML = `<button class="btn btn-danger unfollow-button" data-id="${user.id}">Unfollow</button>`;
                     break;
-                case 'requested' :
+                case 'requested':
                     buttonHTML = `<button class="btn btn-secondary requested-button" data-id="${user.id}">Requested</button>`;
                     break;
-                case 'accept' :
+                case 'accept':
                     buttonHTML = `<button class="btn btn-secondary accept-button" data-id="${user.id}">Accept</button>`;
                     break;
-                case 'follow_back_accept' :
+                case 'follow_back_accept':
                     buttonHTML = `<button class="btn btn-secondary follow-back-accept-button" data-id="${user.id}">Follow back request accept</button>`;
                     break;
                 case 'follow_back_request':
@@ -728,7 +863,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 default:
                     buttonHTML = `<button class="btn btn-success follow-button" data-id="${user.id}">Follow</button>`;
             }
-    
+
             const listItem = `
                 <div class="form-outline mb-0 user-${user.username}">
                     <img src="${user.profile_img}" alt="${user.username}" width="50px" height="50px" data-id="${user.id}" class="profile-image">
@@ -739,11 +874,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
             `;
             search_result_div.innerHTML += listItem;
         });
-    
+
         search_result_div.addEventListener('click', event => {
             const target = event.target;
             const userId = target.getAttribute('data-id');
-    
+        
             if (target.classList.contains('profile-image')) {
                 toggleDisplay(userprofile_detail_div);
                 userprofile_detail_div.style.display = 'block';
@@ -755,12 +890,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         alert('There has been a problem with your fetch operation:', error);
                     });
             }
-    
+        
             if (target.classList.contains('message-button')) {
                 toggleDisplay(messages_div);
                 openChat(userId);
             }
-
+        
             if (target.classList.contains('unfollow-button')) {
                 fetch(`http://127.0.0.1:8000/unfollowfriendrequest/${userId}`, {
                     method: 'DELETE',
@@ -769,13 +904,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 201) {
+                        target.classList.remove('unfollow-button','btn', 'btn-danger');
+                        target.classList.add('follow-button','btn', 'btn-success');
+                        target.textContent = 'Follow';
+                    }
+                    return response.json();
+                })
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
             }
-            
-            
+        
             if (target.classList.contains('follow-back-request-button')) {
                 fetch(`http://127.0.0.1:8000/sendfollowbackrequest/${userId}`, {
                     method: 'GET',
@@ -784,13 +925,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 201) {
+                        target.classList.remove('follow-back-request-button');
+                        target.classList.add('follow-back-requested-button');
+                        target.textContent = 'Follow back requested';
+                    }
+                    return response.json();
+                })
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
             }
-            
-
+        
             if (target.classList.contains('follow-back-accept-button')) {
                 fetch(`http://127.0.0.1:8000/acceptfollowbackrequest/${userId}`, {
                     method: 'GET',
@@ -799,14 +946,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (response.status === 202) {
+                        target.classList.remove('follow-back-accept-button', 'btn', 'btn-secondary');
+                        target.classList.add('unfollow-button','btn', 'btn-danger');
+                        target.textContent = 'Unfollow';
+                    }
+                    return response.json();
+                })
                 .catch(error => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
-
             }
-
-
+        
             if (target.classList.contains('accept-button')) {
                 fetch(`http://127.0.0.1:8000/acceptfollowrequest/${userId}`, {
                     method: 'GET',
@@ -820,7 +972,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     alert('There has been a problem with your fetch operation:', error);
                 });
             }
-
+        
             if (target.classList.contains('follow-button')) {
                 fetch(`http://127.0.0.1:8000/friendrequestsend/${userId}`, {
                     method: 'GET',
@@ -830,15 +982,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     }
                 })
                 .then(response => {
-                    console.log(response)
                     if (response.status === 201) {
-                        fetchFriendRequests()
-                        .then(data => {
-                            renderFriendRequests(data);
-                        })
-                        .catch(error => {
-                            alert('There has been a problem with your fetch operation:', error);
-                        });
+                        target.classList.remove('follow-button', 'btn', 'btn-success');
+                        target.classList.add('requested-button', 'btn', 'btn-secondary');
+                        target.textContent = 'Requested';
                     }
                     return response.json();
                 })
@@ -848,7 +995,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             }
         });
     }
-    
+
     document.getElementById('addpost-link').addEventListener('click', (event) => {
         event.preventDefault();
         toggleDisplay(addpost_div)
@@ -915,7 +1062,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             })
             .catch(error => alert('Post not Created: ' + error));
     };
-    
+
     document.getElementById('searchuser-link').addEventListener('click', (event) => {
         event.preventDefault();
         toggleDisplay(user_search_div)
@@ -923,14 +1070,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     document.getElementById('message-link').addEventListener('click', (event) => {
         event.preventDefault();
-        
-        toggleDisplay(messages_div)                             
+
+        toggleDisplay(messages_div)
         chat_div.style.display = 'none';
-        chat_conversation_div.style.display='block';
+        chat_conversation_div.style.display = 'block';
         chat_conversation_div.innerHTML = '';
         fetchConversations()
-        .then(data => {
-            data.forEach(reciever => {
+            .then(data => {
+                data.forEach(reciever => {
                     const conversation = `
                     <div class="form-outline mb-0 chats">
                         <img src="${reciever.participants[0].profile_image}" alt="${reciever.conversation_name}" width="50px" height="50px" data-id="${reciever.participants[0].id}" class="profile-image">
@@ -939,10 +1086,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     </div>
                     <hr>
                 `;
-                chat_conversation_div.innerHTML += conversation;
-                openNotificationWebSocket(reciever.conversation_name)
+                    chat_conversation_div.innerHTML += conversation;
+                    openNotificationWebSocket(reciever.conversation_name)
                 });
-                
+
                 document.querySelectorAll('.profile-image').forEach(img => {
                     img.addEventListener('click', (event) => {
                         const userId = event.target.getAttribute('data-id');
@@ -953,45 +1100,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
             .catch(error => {
                 alert('Error fetching posts:', error)
             });
-            let notificationSocket = null;
+        let notificationSocket = null;
 
-            function openNotificationWebSocket(conversationName) {
-                notificationSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/reciever/${conversationName}/?token=${token}`);
+        function openNotificationWebSocket(conversationName) {
+            notificationSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/reciever/${conversationName}/?token=${token}`);
 
-                notificationSocket.onmessage = function (event) {
-                    const data = JSON.parse(event.data);
-                    handleuserNotification(data, conversationName);
-                };
+            notificationSocket.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                handleuserNotification(data, conversationName);
+            };
 
-                notificationSocket.onclose = function (event) {
-                    console.log('Notification WebSocket closed:', event);
-                };
+            notificationSocket.onclose = function (event) {
+                console.log('Notification WebSocket closed:', event);
+            };
 
-                notificationSocket.onerror = function (error) {
-                    console.error('Notification WebSocket error:', error);
-                };
+            notificationSocket.onerror = function (error) {
+                console.error('Notification WebSocket error:', error);
+            };
+        }
+
+        function handleuserNotification(data, conversationName) {
+            const notificationId = document.getElementById(`notification-${conversationName}-id`);
+
+            if (data.count != 0) {
+                notificationId.style.display = "block";
+                let notificationIcon = document.getElementById(`notification-${conversationName}-icon`);
+                notificationIcon.textContent = data.count;
+            } else {
+                notificationId.style.display = "none";
             }
-
-            function handleuserNotification(data, conversationName) {
-                const notificationId = document.getElementById(`notification-${conversationName}-id`);
-
-                if (data.count != 0) {
-                    notificationId.style.display = "block";
-                    let notificationIcon = document.getElementById(`notification-${conversationName}-icon`);
-                    notificationIcon.textContent = data.count;
-                } else {
-                    notificationId.style.display = "none";
-                }
-            }
+        }
     });
 
-    let currentSocket = null; 
+    let currentSocket = null;
     let sendMessageButtonListenerAdded = false;
 
     function openChat(userId) {
         chat_div.style.display = 'block';
         const chatMessageDiv = document.getElementById('ChatMessageDiv');
-        chatMessageDiv.innerHTML = ''; 
+        chatMessageDiv.innerHTML = '';
 
         fetch(`http://127.0.0.1:8000/conversation/${userId}/`, {
             method: 'GET',
@@ -1000,62 +1147,63 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 'Content-Type': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (currentSocket) {
-                currentSocket.close();
-            }
-            currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${data.conversation_name.conversation_name}/?token=${token}`);
-            currentSocket.onmessage = function (event) {
-                const data = JSON.parse(event.data);
-                const messages = Array.isArray(data) ? data : [data];
-                messages.forEach(message => {
-                    const alignmentClass = message.sender_username === login_username ? 'message-right' : 'message-left';
-                    
-                    const messageHTML = `
+            .then(response => response.json())
+            .then(data => {
+                if (currentSocket) {
+                    currentSocket.close();
+                }
+                currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${data.conversation_name.conversation_name}/?token=${token}`);
+                currentSocket.onmessage = function (event) {
+                    const data = JSON.parse(event.data);
+                    const messages = Array.isArray(data) ? data : [data];
+                    messages.forEach(message => {
+                        const alignmentClass = message.sender_username === login_username ? 'message-right' : 'message-left';
+
+                        const messageHTML = `
                         <div class="${alignmentClass}">
                             <strong>${message.sender_username}</strong>: ${message.text}
                         </div>
                     `;
-                    chatMessageDiv.innerHTML += messageHTML;
-                });
-            };
-            currentSocket.onclose = function (event) {
-                console.log('WebSocket closed:', event);
-            };
-            currentSocket.onerror = function (error) {
-                alert('WebSocket error:', error);
-            };
-            const sendMessage = (content) => {
-                if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
-                    currentSocket.send(JSON.stringify(content));
-                }
-            };
-            if (!sendMessageButtonListenerAdded) {
-                document.getElementById('sendMessageButton').addEventListener('click', () => {
-                    const messageContent = document.getElementById('messageInput').value;
+                        chatMessageDiv.innerHTML += messageHTML;
+                    });
+                };
+                currentSocket.onclose = function (event) {
+                    console.log('WebSocket closed:', event);
+                };
+                currentSocket.onerror = function (error) {
+                    alert('WebSocket error:', error);
+                };
+                const sendMessage = (content) => {
+                    if (currentSocket && currentSocket.readyState === WebSocket.OPEN) {
+                        currentSocket.send(JSON.stringify(content));
+                    }
+                };
+                if (!sendMessageButtonListenerAdded) {
+                    document.getElementById('sendMessageButton').addEventListener('click', () => {
+                        const messageContent = document.getElementById('messageInput').value;
 
-                    sendMessage(messageContent);
-                    document.getElementById('messageInput').value = '';
-                });
-                sendMessageButtonListenerAdded = true;
-            }
-        })
-        .catch(error => {
-            alert('Error fetching conversation: ' + error);
-        });
+                        sendMessage(messageContent);
+                        document.getElementById('messageInput').value = '';
+                    });
+                    sendMessageButtonListenerAdded = true;
+                }
+            })
+            .catch(error => {
+                alert('Error fetching conversation: ' + error);
+            });
     }
-    
+
     document.getElementById('userprofile-link').addEventListener('click', (event) => {
         event.preventDefault();
         toggleDisplay(userprofile_detail_div)
         fetchSearchUser(user_id)
-        .then(data => {
-            renderUserPosts(data);
-        })
-        .catch(error => {
-            alert('There has been a problem with your fetch operation:', error)
-        });
+            .then(data => {
+                renderUserPosts(data);
+            })
+            .catch(error => {
+                console.log("vvsdjgvjsfjfsd", error.message)
+                alert('There has been a problem with your fetch operation:', error)
+            });
     })
 
 
@@ -1078,7 +1226,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function initializeWebSocket(username) {
         const currentSocket = new WebSocket(`ws://127.0.0.1:8000/ws/notification/${username}/`);
-        
+
         currentSocket.onmessage = function (event) {
             const data = JSON.parse(event.data);
             handleNotification(data);
@@ -1100,11 +1248,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function handleNotification(data) {
         const notification_id = document.getElementById('notification-id');
         if (data.count != 0) {
-            notification_id.style.display="block"
+            notification_id.style.display = "block"
             let notification_icon = document.getElementById('notification-icon');
             notification_icon.textContent = data.count;
         } else {
-            notification_id.style.display="none"
+            notification_id.style.display = "none"
         }
     }
     initializeWebSocket(login_username);
